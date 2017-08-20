@@ -3,3 +3,6 @@
 
 # Archivos temporales de Emacs
 **/*~
+
+# Archivos txt
+**/*.txt
