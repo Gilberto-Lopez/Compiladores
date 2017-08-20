@@ -5,7 +5,6 @@
 #define ID 1
 #define ENTERO 2
 #define REAL 3
-#define BLANCO 4
 
 FILE* f;
 char* value;
@@ -33,9 +32,11 @@ error (char* buffer, char m) {
 
 char*
 append (char* str, char ch) {
-  char* nuevo = NULL;
+  char* nuevo;
   size_t len = strlen (str);
   nuevo = malloc (len + 2);
+  if (nuevo == NULL)
+    exit (0);
   strcpy (nuevo, str);
   nuevo[len] = ch;
   nuevo[len+1] = '\0';
@@ -44,14 +45,11 @@ append (char* str, char ch) {
 
 int
 next_token (void) {
-  int t;
   char c;
   int q = 0;
   char* buffer = "";
   c = fgetc (f);
   while (c != EOF) {
-    printf("%c\n", c);
-    t = 0;
     switch (q) {
       case 0:
         if (is_letter (c))
@@ -64,7 +62,8 @@ next_token (void) {
           q = 5;
         else
           error (buffer, c);
-        buffer = append (buffer, c);
+        if (q != 5)
+          buffer = append (buffer, c);
         break;
       case 1:
         if (is_digit (c) || is_letter (c))
@@ -108,13 +107,12 @@ next_token (void) {
       case 5:
         while (is_blank (c))
           c = fgetc (f);
-        t = BLANCO;
         q = 0;
     }
-    if (t != BLANCO)
+    if (q != 0)
       c = fgetc (f);
   }
-  return t;
+  return 0;
 }
 
 void
