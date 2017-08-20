@@ -2,34 +2,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define ID 0
-#define ENTERO 1
-#define REAL 2
-#define BLANCO 3
+#define ID 1
+#define ENTERO 2
+#define REAL 3
+#define BLANCO 4
 
 FILE* f;
 char* value;
 
 int
 is_letter (char c) {
-  if ((c >= 65 &&  c <= 90) ||
-    (c >= 97 &&  c <= 122))
-    return 1;
-  return 0;
+  return (c >= 65 &&  c <= 90) || (c >= 97 &&  c <= 122);
 }
 
 int
 is_digit (char c) {
-  if (c >= 48 && c <= 57)
-    return 1;
-  return 0;
+  return c >= 48 && c <= 57;
 }
 
 int
 is_blank (char c) {
-  if (c == ' ' || c == '\t' || c == '\n')
-    return 1;
-  return 0;
+  return c == ' ' || c == '\t' || c == '\n';
 }
 
 void
@@ -51,13 +44,14 @@ append (char* str, char ch) {
 
 int
 next_token (void) {
-  int t = -1;
+  int t;
   char c;
   int q = 0;
   char* buffer = "";
   c = fgetc (f);
   while (c != EOF) {
     printf("%c\n", c);
+    t = 0;
     switch (q) {
       case 0:
         if (is_letter (c))
@@ -66,7 +60,7 @@ next_token (void) {
           q = 2;
         else if (c == '.')
           q = 3;
-        else if (c == is_blank (c))
+        else if (is_blank (c))
           q = 5;
         else
           error (buffer, c);
@@ -112,6 +106,8 @@ next_token (void) {
         buffer = append (buffer, c);
         break;
       case 5:
+        while (is_blank (c))
+          c = fgetc (f);
         t = BLANCO;
         q = 0;
     }
@@ -128,10 +124,10 @@ main (void) {
     printf("No es posible leer ejemplo.txt\n");
     exit (0);
   }
-  while (1) {
-    int clase = next_token ();
-    printf ("Clase: %d, Token: %s\n", clase, value);
+  int clase = next_token ();
+  while (clase) {
+    printf ("Clase: %d, Token: '%s'\n", clase, value);
+    clase = next_token ();
   }
   fclose(f);
-
 }
