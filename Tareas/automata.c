@@ -2,34 +2,45 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Constantes de clase de tokens.
 #define ID 1
 #define ENTERO 2
 #define REAL 3
 
+/* Archivo donde se leen los tokens. */
 FILE* f;
+/* Último token. */
 char* value;
 
+/* Determina si C es una letra [A-Za-z]. */
 int
 is_letter (char c) {
   return (c >= 65 &&  c <= 90) || (c >= 97 &&  c <= 122);
 }
 
+/* Determina si C es un dígito [0-9]. */
 int
 is_digit (char c) {
   return c >= 48 && c <= 57;
 }
 
+/* Determina si C es un caracter en blanco [' '\n\t]. */
 int
 is_blank (char c) {
   return c == ' ' || c == '\t' || c == '\n';
 }
 
+/* Imprime un mensaje de error donde BUFFER es el token que se
+ * estaba leyendo y M es caracter que rompe la expresión. 
+ * Termina la ejecución del programa. */
 void
 error (char* buffer, char m) {
   printf("Expresión mal formada: %s*%c\n", buffer, m);
   exit (0);
 }
 
+/* Concatena el caracter CH al final de la cadena STR y regresa
+ * el apuntador. */
 char*
 append (char* str, char ch) {
   char* nuevo;
@@ -43,6 +54,8 @@ append (char* str, char ch) {
   return nuevo;
 }
 
+/* Obtiene el siguiente token, regresa la clase del token y lo
+ * guarda en VALUE. */
 int
 next_token (void) {
   char c;
@@ -115,6 +128,7 @@ next_token (void) {
   return 0;
 }
 
+// Punto de entrada del programa.
 void
 main (void) {
   f = fopen ("ejemplo.txt", "r");
