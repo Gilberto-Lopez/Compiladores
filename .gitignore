@@ -1,0 +1,5 @@
+# Archivos PDF
+**/*.pdf
+
+# Archivos temporales de Emacs
+**/*~
