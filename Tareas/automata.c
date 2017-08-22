@@ -11,6 +11,8 @@
 FILE* f;
 /* Último token. */
 char* value;
+/* Línea donde ocurre el error. */
+int line = 1;
 
 /* Determina si C es una letra [A-Za-z]. */
 int
@@ -27,7 +29,11 @@ is_digit (char c) {
 /* Determina si C es un caracter en blanco [' '\n\t]. */
 int
 is_blank (char c) {
-  return c == ' ' || c == '\t' || c == '\n';
+  if (c == '\n') {
+    line++;
+    return 1;
+  }
+  return c == ' ' || c == '\t';
 }
 
 /* Imprime un mensaje de error donde BUFFER es el token que se
@@ -35,7 +41,8 @@ is_blank (char c) {
  * Termina la ejecución del programa. */
 void
 error (char* buffer, char m) {
-  printf("Expresión mal formada: %s*%c\n", buffer, m);
+  printf ("*** Error ***\n");
+  printf ("Línea %d :: Expresión mal formada: '%s'.'%c'\n", linea, buffer, m);
   exit (0);
 }
 
@@ -133,7 +140,7 @@ void
 main (void) {
   f = fopen ("ejemplo.txt", "r");
   if (f == NULL) {
-    printf("No es posible leer ejemplo.txt\n");
+    printf ("No es posible leer ejemplo.txt\n");
     exit (0);
   }
   int clase = next_token ();
