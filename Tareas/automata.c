@@ -42,7 +42,7 @@ is_blank (char c) {
 void
 error (char* buffer, char m) {
   printf ("*** Error ***\n");
-  printf ("Línea %d :: Expresión mal formada: '%s'.'%c'\n", linea, buffer, m);
+  printf ("Línea %d :: Expresión mal formada: '%s'.'%c'\n", line, buffer, m);
   exit (0);
 }
 
