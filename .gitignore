@@ -6,3 +6,7 @@
 
 # Archivos txt
 **/*.txt
+
+# AbiWord files
+**/*.abw
+
