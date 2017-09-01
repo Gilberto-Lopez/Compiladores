@@ -10,3 +10,5 @@
 # AbiWord files
 **/*.abw
 
+# Autómatas de Lex
+**/*.yy.c
