@@ -15,7 +15,7 @@ keyword "class"|"if"|"then"|"else"|"while"|"do"|"od"|"case"|"of"|"new"|"isvoid"|
 \"                            {ECHO;BEGIN(string);}
 <string>(\\.|[^\\"\0])*       ECHO;
 <string>\"                    {ECHO;fwrite("\t3\n",1,3,yyout);BEGIN(INITIAL);}
-<string><<EOF>>               {ECHO;fwrite("\tNo se reconoce\n",1,16,yyout);BEGIN(INITIAL);}
+<string><<EOF>>               {ECHO;fwrite(error,1,len,yyout);BEGIN(INITIAL);}
 {blanco}+                     {ECHO;fwrite("\t5\n",1,3,yyout);}
 "//"[^\n]*\n                  {ECHO;fwrite("\t6\n",1,3,yyout);}
 "/*"                          {ECHO;BEGIN(comment);}
@@ -23,7 +23,7 @@ keyword "class"|"if"|"then"|"else"|"while"|"do"|"od"|"case"|"of"|"new"|"isvoid"|
 <comment>"*"+[^*/\n]*         ECHO;
 <comment>"*"+"/"              {ECHO;fwrite("\t6\n",1,3,yyout);BEGIN(INITIAL);}
 {operador}                    {ECHO;fwrite("\t7\n",1,3,yyout);}
-.                             {ECHO;fwrite("\tNo se reconoce\n",1,16,yyout);}
+.                             {ECHO;fwrite(error,1,len,yyout);}
 %%
 int
 yywrap (void) {
