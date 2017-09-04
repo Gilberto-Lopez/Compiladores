@@ -12,3 +12,4 @@ Laboratorio de compiladores
 * Tareas/
   + automata.c : Autómata que reconoce ID, enteros y flotantes.
   + ejemplo_lex.yy.c : Ejemplo de sintaxis para flex.
+  + analizador_sintactico.l : Ejemplo de analizador sintáctico descendente recursivo.
