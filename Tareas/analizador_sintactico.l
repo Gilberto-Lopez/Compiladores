@@ -1,22 +1,15 @@
 %{
-  #include <stdio.h>
-  
-  #define MAS 1
-  #define MUL 2
-  #define ID 3
-  #define LPAR 4
-  #define RPAR 5
+  #include "headers.h"
 
   int token;
 %}
 %%
-"+"                           return MAS;
-"*"                           return MUL;
-"id"                          return ID;
-"("                           return LPAR;
-")"                           return RPAR;
-[ ]+                          ;
-(.|\n)+                       exit (0);
+"+"                           {ECHO;printf("\n");return MAS;}
+"*"                           {ECHO;printf("\n");return MUL;}
+"id"                          {ECHO;printf("\n");return ID;}
+"("                           {ECHO;printf("\n");return LPAR;}
+")"                           {ECHO;printf("\n");return RPAR;}
+[ \t\n]+                      ;
 %%
 int
 yywrap (void) {
@@ -70,7 +63,8 @@ F (void) {
 
 void
 error (void) {
-  printf("Error sintáctico.\n");
+  printf(yytext);
+  printf("\tError sintáctico.\n");
 }
 
 void
