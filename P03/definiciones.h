@@ -1,3 +1,6 @@
+#include <stdlib.h>
+#include <string.h>
+
 #define KEYWORD 1
 #define OPERADOR 2
 #define ENTERO 3
@@ -12,3 +15,5 @@
 #define COMA 12
 #define COLON 13
 #define SCOLON 14
+
+void init (int);
