@@ -8,6 +8,7 @@ Laboratorio de compiladores
 * Prácticas:
   1. Sistema de procesamiento de Lenguaje.
   2. Flex.
+  3. Yacc.
 
 * Tareas/
   + automata.c : Autómata que reconoce ID, enteros y flotantes.
