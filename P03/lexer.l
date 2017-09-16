@@ -1,7 +1,5 @@
 %{
   #include "definiciones.h"
-
-  char* buffer;
 %}
 letra [A-Za-z]
 digito [0-9]
@@ -25,7 +23,7 @@ operador [-+*/<!]|"=="|"<="
 {digito}+                     return ENTERO;
 ({digito}|{letra}|"_")+       return ID;
 "//"(.)*\n                    ++yylineno;
-\"                            {init(1);strcat(buffer,yytext);BEGIN(string);}
+\"                            {clean(1);strcat(buffer,yytext);BEGIN(string);}
 <string>(\\.|[^\\"\0])*       strcat(buffer,yytext);
 <string>\"                    {strcat(buffer,yytext);BEGIN(INITIAL);return STRING;}
 <string><<EOF>>               {BEGIN(INITIAL);error();}
@@ -41,25 +39,26 @@ yywrap (void) {
   return 1;
 }
 
+/* Limpia BUFFER para los strings si F es 1.
+ * Crea un string vacío con malloc en BUFFER. */
 void
-init (int f) {
+clean (int f) {
   if (f)
     free(buffer);
   buffer = malloc (sizeof (char));
   buffer[0] = '\0';
 }
 
+/* Imprime un mensaje de error cuando ocurre un error léxico. */
 void
 error (void) {
   printf("*** Error léxico en línea %d: %s\n", yylineno, yytext);
 }
 
 int
-main(int argc, char const *argv[])
-{
-  init (0);
+main(int argc, char const *argv[]) {
+  clean (0);
   yyin = fopen (argv[1],"r");
-  //yyout = fopen (argv[2],"w");
   int token = yylex ();
   while (token) {
     if (token == STRING)
@@ -69,6 +68,5 @@ main(int argc, char const *argv[])
     token = yylex ();
   }
   fclose (yyin);
-  //fclose (yyout);
   return 0;
 }

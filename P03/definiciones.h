@@ -16,4 +16,8 @@
 #define COLON 13
 #define SCOLON 14
 
+// Buffer para guardar los strings.
+char* buffer;
+
 void init (int);
+void error (void);
