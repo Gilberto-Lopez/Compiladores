@@ -19,5 +19,5 @@
 // Buffer para guardar los strings.
 char* buffer;
 
-void init (int);
+void clean (int);
 void error (void);
