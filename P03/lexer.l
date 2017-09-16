@@ -11,7 +11,7 @@ operador [-+*/<!]|"=="|"<="
 %x string
 %x comment
 %%
-{blanco}+                     ;
+{blanco}+                     {if (yytext[0] == '\n') ++yylineno;}
 "."                           return PUNTO;
 ","                           return COMA;
 ":"                           return COLON;
@@ -24,15 +24,17 @@ operador [-+*/<!]|"=="|"<="
 {operador}                    return OPERADOR;
 {digito}+                     return ENTERO;
 ({digito}|{letra}|"_")+       return ID;
-"//"[^\n]*\n                  ;
+"//"(.)*\n                    ++yylineno;
 \"                            {init(1);strcat(buffer,yytext);BEGIN(string);}
 <string>(\\.|[^\\"\0])*       strcat(buffer,yytext);
 <string>\"                    {strcat(buffer,yytext);BEGIN(INITIAL);return STRING;}
-<string><<EOF>>               {BEGIN(INITIAL);}
+<string><<EOF>>               {BEGIN(INITIAL);error();}
 "/*"                          BEGIN(comment);
+<comment>\n                   ++yylineno;
 <comment>[^*\n]*              ;
 <comment>"*"+[^*/\n]*         ;
 <comment>"*"+"/"              BEGIN(INITIAL);
+.                             error();
 %%
 int
 yywrap (void) {
@@ -47,6 +49,11 @@ init (int f) {
   buffer[0] = '\0';
 }
 
+void
+error (void) {
+  printf("*** Error léxico en línea %d: %s\n", yylineno, yytext);
+}
+
 int
 main(int argc, char const *argv[])
 {
@@ -56,8 +63,9 @@ main(int argc, char const *argv[])
   int token = yylex ();
   while (token) {
     if (token == STRING)
-      printf("\t%s",buffer);
-    printf("%s\t%d\n", yytext, token);
+      printf("%s\t%d %d\n",buffer, token, yylineno);
+    else
+      printf("%s\t%d %d\n", yytext, token, yylineno);
     token = yylex ();
   }
   fclose (yyin);
