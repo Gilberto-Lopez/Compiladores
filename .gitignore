@@ -12,3 +12,9 @@
 
 # Autómatas de Lex
 **/*.yy.c
+
+# Archivos Yacc/Bison
+**/*.tab.*
+
+# Código LOOLI
+**/*.lol

@@ -4,12 +4,13 @@
 letra [A-Za-z]
 digito [0-9]
 keyword "class"|"inherits"|"super"|"this"|"if"|"else"|"switch"|"case"|"break"|"while"|"default"|"return"|"int"|"boolean"|"true"|"false"|"null"
-blanco [ \n\f\r\t\v]
+blanco [ \f\r\t\v]
 operador [-+*/<!]|"=="|"<="
 %x string
 %x comment
 %%
-{blanco}+                     {if (yytext[0] == '\n') ++yylineno;}
+\n                            ++yylineno;
+{blanco}+                     ;
 "."                           return PUNTO;
 ","                           return COMA;
 ":"                           return COLON;
@@ -52,7 +53,7 @@ clean (int f) {
 /* Imprime un mensaje de error cuando ocurre un error léxico. */
 void
 error (void) {
-  printf("*** Error léxico en línea %d: %s\n", yylineno, yytext);
+  printf("*** Error léxico en línea %d: '%s'\n", yylineno, yytext);
 }
 
 int
@@ -62,7 +63,7 @@ main(int argc, char const *argv[]) {
   int token = yylex ();
   while (token) {
     if (token == STRING)
-      printf("%s\t%d %d\n",buffer, token, yylineno);
+      printf("%s\t%d %d\n", buffer, token, yylineno);
     else
       printf("%s\t%d %d\n", yytext, token, yylineno);
     token = yylex ();
