@@ -20,4 +20,4 @@
 char* buffer;
 
 void clean (int);
-void error (void);
+void error (char*);

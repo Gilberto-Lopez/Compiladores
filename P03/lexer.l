@@ -24,16 +24,31 @@ operador [-+*/<!]|"=="|"<="
 {digito}+                     return ENTERO;
 ({digito}|{letra}|"_")+       return ID;
 "//"(.)*\n                    ++yylineno;
-\"                            {clean(1);strcat(buffer,yytext);BEGIN(string);}
-<string>(\\.|[^\\"\0])*       strcat(buffer,yytext);
-<string>\"                    {strcat(buffer,yytext);BEGIN(INITIAL);return STRING;}
-<string><<EOF>>               {BEGIN(INITIAL);error();}
+\"                            { clean(1);
+                                strcat(buffer,yytext);
+                                BEGIN(string);
+                              }
+<string>(\\.|[^\\"\0\n])*     strcat(buffer,yytext);
+<string>\"                    { strcat(buffer,yytext);
+                                BEGIN(INITIAL);
+                                return STRING;
+                              }
+<string>\n                    { BEGIN(INITIAL);
+                                error("Salto de linea en String.");
+                                ++yylineno;
+                              }
+<string>\0                    { BEGIN(INITIAL);
+                                error("Final de cadena en String.");
+                              }
+<string><<EOF>>               { BEGIN(INITIAL);
+                                error("End Of File en String.");
+                              }
 "/*"                          BEGIN(comment);
 <comment>\n                   ++yylineno;
 <comment>[^*\n]*              ;
 <comment>"*"+[^*/\n]*         ;
 <comment>"*"+"/"              BEGIN(INITIAL);
-.                             error();
+.                             error("No se reconoce la cadena.");
 %%
 int
 yywrap (void) {
@@ -50,10 +65,11 @@ clean (int f) {
   buffer[0] = '\0';
 }
 
-/* Imprime un mensaje de error cuando ocurre un error léxico. */
+/* Imprime un mensaje de error S cuando ocurre un error léxico
+ * y señala la línea y token que causaron el error. */
 void
-error (void) {
-  printf("*** Error léxico en línea %d: '%s'\n", yylineno, yytext);
+error (char* s) {
+  printf("*** Error léxico en línea %d: '%s'\n%s\n", yylineno, yytext, s);
 }
 
 int
