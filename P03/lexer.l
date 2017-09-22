@@ -3,7 +3,7 @@
 %}
 letra [A-Za-z]
 digito [0-9]
-keyword "class"|"inherits"|"super"|"this"|"if"|"else"|"switch"|"case"|"break"|"while"|"default"|"return"|"int"|"boolean"|"true"|"false"|"null"
+keyword "class"|"inherits"|"int"|"boolean"|"true"|"false"|"new"|"if"|"else"|"while"|"switch"|"case"|"break"|"default"|"super"|"return"|"this"|"null"
 blanco [ \f\r\t\v]
 operador [-+*/<!]|"=="|"<="
 %x string
@@ -11,6 +11,7 @@ operador [-+*/<!]|"=="|"<="
 %%
 \n                            ++yylineno;
 {blanco}+                     ;
+{keyword}                     return KEYWORD;
 "."                           return PUNTO;
 ","                           return COMA;
 ":"                           return COLON;
@@ -23,7 +24,6 @@ operador [-+*/<!]|"=="|"<="
 {operador}                    return OPERADOR;
 {digito}+                     return ENTERO;
 ({digito}|{letra}|"_")+       return ID;
-"//"(.)*\n                    ++yylineno;
 \"                            { clean(1);
                                 strcat(buffer,yytext);
                                 BEGIN(string);
@@ -43,6 +43,7 @@ operador [-+*/<!]|"=="|"<="
 <string><<EOF>>               { BEGIN(INITIAL);
                                 error("End Of File en String.");
                               }
+"//"(.)*\n                    ++yylineno;
 "/*"                          BEGIN(comment);
 <comment>\n                   ++yylineno;
 <comment>[^*\n]*              ;
