@@ -1,7 +1,7 @@
 %{
-  //#include "definiciones.h"
   #include <stdlib.h>
   #include <string.h>
+  
   // Buffer para guardar los strings.
   char* buffer;
   void clean (int);
@@ -30,28 +30,26 @@ simbolo [.,:;(){}=]
 "case"                        return CASE;
 "break"                       return BREAK;
 "default"                     return DEFAULT;
+"new"                         return NEW;
 "int"|"boolean"               return TYPE;
 [A-Z]({digito}|{letra}|"_")+  return TYPE;
-"new"                         return NEW;
 "this"                        return ID;
+({digito}|{letra}|"_")+       return ID;
 "true"                        return TRUE_K;
 "false"                       return FALSE_K;
-
-"null"                        ;
-
+"null"                        return NULL_K;
 {simbolo}                     return *yytext;
 {operador}                    return *yytext;
 "<="                          return LE;
 "=="                          return EQ;
 {digito}+                     return INTEGER;
-({digito}|{letra}|"_")+       return ID;
-
 \"                            { clean(1);
                                 strcat(buffer,yytext);
                                 BEGIN(string);
                               }
 <string>(\\.|[^\\"\0\n])*     strcat(buffer,yytext);
 <string>\"                    { strcat(buffer,yytext);
+                                //free(yytext);
                                 yytext = buffer;
                                 BEGIN(INITIAL);
                                 return STRING;
@@ -95,21 +93,3 @@ void
 error (char* s) {
   printf("*** Error léxico en línea %d: '%s'\n%s\n", yylineno, yytext, s);
 }
-
-/*
-int
-main(int argc, char const *argv[]) {
-  clean (0);
-  yyin = fopen (argv[1],"r");
-  int token = yylex ();
-  while (token) {
-    if (token == STRING)
-      printf("%s\t%d %d\n", buffer, token, yylineno);
-    else
-      printf("%s\t%d %d\n", yytext, token, yylineno);
-    token = yylex ();
-  }
-  fclose (yyin);
-  return 0;
-}
-*/

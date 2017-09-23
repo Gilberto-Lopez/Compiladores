@@ -76,6 +76,7 @@ expr:
   | STRING
   | TRUE_K
   | FALSE_K
+  | NULL_K
   ;
 
 /* Listas (posiblemente vacías) de expr con separación de comas. */
@@ -111,4 +112,3 @@ main (int argc, char* argv[]) {
   fclose (yyin);
   return 0;
 }
-
