@@ -15,6 +15,7 @@
 
 # Archivos Yacc/Bison
 **/*.tab.*
+**/*.output
 
 # Código LOOLI
 **/*.lol

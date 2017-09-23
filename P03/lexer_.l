@@ -1,58 +1,35 @@
 %{
-  //#include "definiciones.h"
-  #include <stdlib.h>
-  #include <string.h>
-  // Buffer para guardar los strings.
-  char* buffer;
-  void clean (int);
-  void error (char*);
-
-  #include "parser.tab.h"
+  #include "definiciones.h"
 %}
 letra [A-Za-z]
 digito [0-9]
+keyword "class"|"inherits"|"int"|"boolean"|"true"|"false"|"new"|"if"|"else"|"while"|"switch"|"case"|"break"|"default"|"super"|"return"|"this"|"null"
 blanco [ \f\r\t\v]
-operador [-+*/<!]
-simbolo [.,:;(){}=]
+operador [-+*/<!]|"=="|"<="
 %x string
 %x comment
 %%
 \n                            ++yylineno;
 {blanco}+                     ;
-"class"                       return CLASS;
-"inherits"                    return INHERITS;
-"return"                      return RETURN;
-"super"                       return SUPER;
-"if"                          return IF;
-"else"                        return ELSE;
-"while"                       return WHILE;
-"switch"                      return SWITCH;
-"case"                        return CASE;
-"break"                       return BREAK;
-"default"                     return DEFAULT;
-"int"|"boolean"               return TYPE;
-[A-Z]({digito}|{letra}|"_")+  return TYPE;
-"new"                         return NEW;
-"this"                        return ID;
-"true"                        return TRUE_K;
-"false"                       return FALSE_K;
-
-"null"                        ;
-
-{simbolo}                     return *yytext;
-{operador}                    return *yytext;
-"<="                          return LE;
-"=="                          return EQ;
-{digito}+                     return INTEGER;
+{keyword}                     return KEYWORD;
+"."                           return PUNTO;
+","                           return COMA;
+":"                           return COLON;
+";"                           return SCOLON;
+"("                           return LPAR;
+")"                           return RPAR;
+"{"                           return LBRACKET;
+"}"                           return RBRACKET;
+"="                           return ASIGN;
+{operador}                    return OPERADOR;
+{digito}+                     return ENTERO;
 ({digito}|{letra}|"_")+       return ID;
-
 \"                            { clean(1);
                                 strcat(buffer,yytext);
                                 BEGIN(string);
                               }
 <string>(\\.|[^\\"\0\n])*     strcat(buffer,yytext);
 <string>\"                    { strcat(buffer,yytext);
-                                yytext = buffer;
                                 BEGIN(INITIAL);
                                 return STRING;
                               }
@@ -96,7 +73,6 @@ error (char* s) {
   printf("*** Error léxico en línea %d: '%s'\n%s\n", yylineno, yytext, s);
 }
 
-/*
 int
 main(int argc, char const *argv[]) {
   clean (0);
@@ -112,4 +88,3 @@ main(int argc, char const *argv[]) {
   fclose (yyin);
   return 0;
 }
-*/
