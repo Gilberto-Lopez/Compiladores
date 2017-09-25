@@ -32,7 +32,7 @@ simbolo [.,:;(){}=]
 "default"                     return DEFAULT;
 "new"                         return NEW;
 "int"|"boolean"               return TYPE;
-[A-Z]({digito}|{letra}|"_")+  return TYPE;
+[A-Z]({digito}|{letra}|"_")*  return TYPE;
 "true"                        return TRUE_K;
 "false"                       return FALSE_K;
 "null"                        return NULL_K;
@@ -55,7 +55,7 @@ simbolo [.,:;(){}=]
                                 return STRING;
                               }
 <string>\n                    { BEGIN(INITIAL);
-                                error("Salto de linea en String.");
+                                error("Salto de línea en String.");
                                 ++yylineno;
                               }
 <string>\0                    { BEGIN(INITIAL);
@@ -91,5 +91,7 @@ clean (int f) {
  * y señala la línea y token que causaron el error. */
 void
 error (char* s) {
-  printf("*** Error léxico en línea %d: '%s'\n%s\n", yylineno, yytext, s);
+  //printf("*** Error léxico en línea %d: '%s'\n%s\n", yylineno, yytext, s);
+  fprintf(stderr, "*** Error léxico en línea %d: '%s'\n%s\n",
+    yylineno, yytext, s);
 }

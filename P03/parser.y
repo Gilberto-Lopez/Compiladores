@@ -8,7 +8,7 @@
   void yyerror (char*);
 %}
 %start program
-%token CLASS TYPE ID INHERITS SUPER WHILE SWITCH NEW INTEGER STRING BREAK DEFAULT CASE ELSE IF VALUE RETURN NULL_K TRUE_K FALSE_K
+%token CLASS TYPE ID INHERITS SUPER WHILE SWITCH NEW INTEGER STRING BREAK DEFAULT CASE ELSE IF RETURN NULL_K TRUE_K FALSE_K
 %nonassoc '<' LE EQ
 %left '+' '-'
 %left '*' '/'
@@ -89,7 +89,7 @@ exprc_list:
 /* Listas (posiblemente vacías) de cases. */
 case_list:
   %empty
-  | case_list CASE VALUE ':' expr_list BREAK ';'
+  | case_list CASE INTEGER ':' expr_list BREAK ';'
   ;
 
 /* Claúsula default (opcional) para el switch. */
@@ -101,7 +101,9 @@ default_clause:
 /* Imprime mensajes de error por yyparse (). */
 void
 yyerror (char* s) {
-  printf("*** Error sintáctico en línea %d: '%s'\n%s\n", yylineno, yytext, s);
+  (void) s;
+  fprintf(stderr, "*** Error sintáctico en línea %d: '%s'\n",
+    yylineno, yytext);
   //fprintf(stderr, "%s\n", s);
 }
 
