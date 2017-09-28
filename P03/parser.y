@@ -6,6 +6,7 @@
   extern int yylex ();
   extern char* yytext;
   extern FILE* yyin;
+  //extern FILE* yyout;
   extern int yylineno;
 
   //extern int yyparse ();
@@ -14,37 +15,66 @@
   #include "asa.h"
 %}
 %start program
-%union {
+%union{
   char* string;
   int integer;
   List* lista;
   Programa* programa;
   Class* clase;
+  Feature* miembro;
+  Formal* param;
+  Expr* exp;
+  Construccion* constr;
 }
 %token CLASS TYPE ID INHERITS SUPER WHILE SWITCH NEW INTEGER STRING BREAK DEFAULT CASE ELSE IF RETURN NULL_K TRUE_K FALSE_K
 %nonassoc '<' LE EQ
 %left '+' '-'
 %left '*' '/'
-%type<string> TYPE ID
+%type<string> TYPE ID STRING
 %type<integer> INTEGER
 %type<lista> formal_list expr_list exprc_list case_list
 %type<programa> program
 %type<clase> class
+%type<miembro> feature
+%type<param> formal
+%type<exp> expr
+%type<constr> default_clause
 %%
 program:
   class
+    {
+      Programa* p;
+      new_program (&p);
+      agrega (p->clases, $1);
+      $$ = p;
+      //generar_arbol (p);
+    }
   | program class
+    { agrega ($$->clases, $2); }
   ;
 
 class:
   CLASS TYPE '{' feature_list '}'
+    { Class* c;
+      new_class (&c, $2, NULL, $4);
+      $$ = c;
+    }
   | CLASS TYPE INHERITS TYPE '{' feature_list '}'
+    { Class* c;
+      new_class (&c, $2, $4, $6);
+      $$ = c;
+    }
   ;
 
 /* Listas (posiblemente vacías) de feature. */
 feature_list:
   %empty
+    { List* l;
+      nueva_lista (&l, L_FEATURE);
+      $$ = l;
+    }
   | feature_list feature
+    { agrega ($$, $2); }
   ;
 
 feature:
@@ -53,21 +83,41 @@ feature:
   | TYPE ID '=' expr ';'
   ;
 
-/* Listas (posiblemente vacías'de) de formal. */
+/* Listas (posiblemente vacías de) de formal. */
 formal_list:
   %empty
+    { List* l;
+      nueva_lista (&l, L_FORMAL);
+      $$ = l;
+    }
   | formal
+    { List* l;
+      nueva_lista (&l, L_FORMAL);
+      agrega (l, $1);
+      $$ = l;
+    }
   | formal_list ',' formal
+    { agrega ($$, $3); }
   ;
 
 /* Listas (posiblemente vacías) de expr. */
 expr_list:
   %empty
+    { List* l;
+      nueva_lista (&l, L_EXPR);
+      $$ = l;
+    }
   | expr_list expr ';'
+    { agrega ($$, $2); }
   ;
 
 formal:
   TYPE ID
+    {
+      Formal* f;
+      new_formal (&f, $1, $2);
+      $$ = f;
+    }
   ;
 
 expr:
@@ -100,8 +150,18 @@ expr:
 /* Listas (posiblemente vacías) de expr con separación de comas. */
 exprc_list:
   %empty
+    { List* l;
+      nueva_lista (&l, L_EXPRC);
+      $$ = l;
+    }
   | expr
+    { List* l;
+      nueva_lista (&l, L_EXPRC);
+      agrega (l, $1);
+      $$ = l;
+    }
   | exprc_list ',' expr
+    { agrega ($$, $3); }
   ;
 
 /* Listas (posiblemente vacías) de cases. */

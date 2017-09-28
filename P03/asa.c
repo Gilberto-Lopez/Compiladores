@@ -46,26 +46,34 @@ agrega_elemento (List* lista, void* elemento) {
   return 0;
 }
 
+/* Crea un nuevo programa en PROGRAMA con una lista vacía de clases. Regresa
+ * 0 si la operación fue exitosa. */
 int
 new_program (Programa** programa) {
   Programa* p = (Programa*) malloc (sizeof (Programa));
-  if (p == NULL || nueva_lista (& p->clases, CLASE))
+  if (p == NULL || nueva_lista (& p->clases, L_CLASE))
     return 1;
   *programa = p;
   return 0;
 }
 
+/* Crea una nueva clase en CLASE, el nombre es NOMBRE, puede heredar a la clase
+ * SUPER, FEATURES es la lista de miembros. Regresa 0 si la operación fue
+ * exitosa. */
 int
-new_class (Class** clase, char* nombre, char* super) {
+new_class (Class** clase, char* nombre, char* super, List* features) {
   Class* c = (Class*) malloc (sizeof (Class));
-  if (c == NULL || nueva_lista (& c->features, FEATURE))
+  if (c == NULL)
     return 1;
   c->nombre = nombre;
   c->super = super;
+  c->features = features;
   *clase = c;
   return 0;
 }
 
+/* Crea un nuevo parámetro formal en FORMAL con firma TIPO ID. Regresa 0 si la
+ * operación fue exitosa. */
 int
 new_formal (Formal** formal, char* tipo, char* id) {
   Formal* f = (Formal*) malloc (sizeof (Formal));
@@ -82,8 +90,8 @@ new_feature (Feature** feature, Type_Feature tipo, char* nombre_tipo, char* id,
   Expr* asgnr) {
   Feature* f = (Feature*) malloc (sizeof (Feature));
   if (f == NULL
-    || nueva_lista (& f->params,FORMAL)
-    || nueva_lista (& f->body, EXPR))
+    || nueva_lista (& f->params,L_FORMAL)
+    || nueva_lista (& f->body, L_EXPR))
     return 1;
   f->tipo = tipo;
   f->nombre_tipo = nombre_tipo;
@@ -112,21 +120,21 @@ new_construct (Construccion** construccion, Type_Expr tipo, Expr* guardia) {
   c->guardia = guardia;
   int f,s;
   switch (tipo) {
-    case IF:
-      f = nueva_lista (& c->fst, EXPR);
-      s = nueva_lista (& c->snd, EXPR);
+    case E_IF:
+      f = nueva_lista (& c->fst, L_EXPR);
+      s = nueva_lista (& c->snd, L_EXPR);
       break;
-    case WHILE:
-      f = nueva_lista (& c->fst, EXPR);
+    case E_WHILE:
+      f = nueva_lista (& c->fst, L_EXPR);
       c->snd = NULL;
       s = 0;
       break;
-    case SWITCH:
-      f = nueva_lista (& c->fst, CASE);
-      s = nueva_lista (& c->snd, EXPR);
+    case E_SWITCH:
+      f = nueva_lista (& c->fst, L_CASE);
+      s = nueva_lista (& c->snd, L_EXPR);
       break;
-    case CASE:
-      f = nueva_lista (& c->fst, EXPR);
+    case E_CASE:
+      f = nueva_lista (& c->fst, L_EXPR);
       c->snd = NULL;
       s = 0;
       break;
@@ -142,7 +150,7 @@ new_construct (Construccion** construccion, Type_Expr tipo, Expr* guardia) {
 int
 new_method (Metodo** metodo, char* nombre) {
   Metodo* m = (Metodo*) malloc (sizeof (Metodo));
-  if (m == NULL || nueva_lista (& m->args, EXPRC))
+  if (m == NULL || nueva_lista (& m->args, L_EXPRC))
     return 1;
   m->nombre = nombre;
   *metodo = m;
@@ -175,21 +183,4 @@ new_expr (Expr** expresion, Type_Expr tipo, Op_Binario op, Operandos* ops,
   e->literal = literal;
   *expresion = e;
   return 0;
-}
-
-void
-main (void) {
-  List* l;
-  nueva_lista (&l, CLASE);
-  int x = 5;
-  agrega (l, &x);
-  agrega (l, &x);
-  agrega (l, &x);
-  Node* tmp = l->cabeza;
-  int i = 0;
-  while (tmp != NULL) {
-    void* elem = tmp->elem;
-    printf("%d\n",  *(int*)elem);
-    tmp = tmp->sig;
-  }
 }

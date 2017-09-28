@@ -85,7 +85,8 @@ enum _type_expr {
   E_INST,
   E_OPB,
   E_NEG,
-  E_VAL
+  E_VAL,
+  E_CASE
 };
 
 // Tipos de operadores bianrios
@@ -159,7 +160,7 @@ int agrega_elemento (List*, void*);
 #define agrega(L, E) (agrega_elemento (L, (void*) E))
 
 int new_program (Programa**);
-int new_class (Class**, char*, char*); 
+int new_class (Class**, char*, char*, List*); 
 int new_formal (Formal**, char*, char*);
 int new_feature (Feature**, Type_Feature, char*, char*, Expr*);
 int new_operands (Operandos**, Expr*, Expr*);
