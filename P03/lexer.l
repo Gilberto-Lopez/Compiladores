@@ -32,14 +32,28 @@ simbolo [.,:;(){}=]
 "break"                       return BREAK;
 "default"                     return DEFAULT;
 "new"                         return NEW;
-"int"|"boolean"               return TYPE;
-[A-Z]({digito}|{letra}|"_")*  return TYPE;
-"true"                        return TRUE_K;
-"false"                       return FALSE_K;
+"int"|"boolean"               { yylval.vstring = yytext;
+                                return TYPE;
+                              }
+[A-Z]({digito}|{letra}|"_")*  { yylval.vstring = yytext;
+                                return TYPE;
+                              }
+"true"                        { yylval.vinteger = 1;
+                                return TRUE_K;
+                              }
+"false"                       { yylval.vinteger = 0;
+                                return FALSE_K;
+                              }
 "null"                        return NULL_K;
-{digito}+                     return INTEGER;
-"this"                        return ID;
-({digito}|{letra}|"_")+       return ID;
+{digito}+                     { yylval.vinteger = atoi(yytext);
+                                return INTEGER;
+                              }
+"this"                        { yylval.vstring = yytext;
+                                return ID;
+                              }
+({digito}|{letra}|"_")+       { yylval.vstring = yytext;
+                                return ID;
+                              }
 {simbolo}                     return *yytext;
 {operador}                    return *yytext;
 "<="                          return LE;
@@ -50,8 +64,7 @@ simbolo [.,:;(){}=]
                               }
 <string>(\\.|[^\\"\0\n])*     strcat(buffer,yytext);
 <string>\"                    { strcat(buffer,yytext);
-                                //free(yytext);
-                                yytext = buffer;
+                                yylval.vstring = buffer;
                                 BEGIN(INITIAL);
                                 return STRING;
                               }
