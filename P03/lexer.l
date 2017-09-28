@@ -7,6 +7,7 @@
   void clean (int);
   void error (char*);
 
+  #include "asa.h"
   #include "parser.tab.h"
 %}
 letra [A-Za-z]
@@ -91,7 +92,7 @@ clean (int f) {
  * y señala la línea y token que causaron el error. */
 void
 error (char* s) {
-  //printf("*** Error léxico en línea %d: '%s'\n%s\n", yylineno, yytext, s);
-  fprintf(stderr, "*** Error léxico en línea %d: '%s'\n%s\n",
+  fprintf(stderr, "*** Error léxico en línea %d: '%s'\n\t%s\n",
     yylineno, yytext, s);
+  //exit(1);
 }

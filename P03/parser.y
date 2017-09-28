@@ -1,17 +1,35 @@
 %{
   #include <stdio.h>
+  #include <stdlib.h>
+  
+  // Lex
   extern int yylex ();
-  extern int yyparse ();
   extern char* yytext;
   extern FILE* yyin;
   extern int yylineno;
+
+  //extern int yyparse ();
   void yyerror (char*);
+  
+  #include "asa.h"
 %}
 %start program
+%union {
+  char* string;
+  int integer;
+  List* lista;
+  Programa* programa;
+  Class* clase;
+}
 %token CLASS TYPE ID INHERITS SUPER WHILE SWITCH NEW INTEGER STRING BREAK DEFAULT CASE ELSE IF RETURN NULL_K TRUE_K FALSE_K
 %nonassoc '<' LE EQ
 %left '+' '-'
 %left '*' '/'
+%type<string> TYPE ID
+%type<integer> INTEGER
+%type<lista> formal_list expr_list exprc_list case_list
+%type<programa> program
+%type<clase> class
 %%
 program:
   class
@@ -104,7 +122,7 @@ yyerror (char* s) {
   (void) s;
   fprintf(stderr, "*** Error sintáctico en línea %d: '%s'\n",
     yylineno, yytext);
-  //fprintf(stderr, "%s\n", s);
+  //exit(1);
 }
 
 int

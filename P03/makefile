@@ -1,10 +1,9 @@
-
 all: parser
 
-parser.tab.c parser.tab.h:	parser.y
+parser.tab.c parser.tab.h: parser.y asa.c asa.h
 	bison -vd parser.y -W
 
-lex.yy.c: lexer.l parser.tab.h
+lex.yy.c: lexer.l parser.tab.h asa.c asa.h
 	flex lexer.l
 
 parser: lex.yy.c parser.tab.c parser.tab.h

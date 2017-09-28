@@ -17,12 +17,12 @@ typedef struct _expr Expr;
 
 // Tipos de listas
 enum _type_list {
-  CLASE,
-  FEATURE,
-  FORMAL,
-  EXPR,
-  EXPRC,
-  CASE
+  L_CLASE,
+  L_FEATURE,
+  L_FORMAL,
+  L_EXPR,
+  L_EXPRC,
+  L_CASE
 };
 
 // Nodos para listas
@@ -59,9 +59,9 @@ struct _formal {
 
 // Tipos de features
 enum _type_feature {
-  DEC,
-  DASGN,
-  METHOD
+  F_DEC,
+  F_DASGN,
+  F_METHOD
 };
 
 // Feature
@@ -78,26 +78,26 @@ struct _feature {
 
 // Tipos de expresiones
 enum _type_expr {
-  APP,
-  IF,
-  WHILE,
-  SWITCH,
-  INST,
-  OPB,
-  NEG,
-  VAL
+  E_APP,
+  E_IF,
+  E_WHILE,
+  E_SWITCH,
+  E_INST,
+  E_OPB,
+  E_NEG,
+  E_VAL
 };
 
 // Tipos de operadores bianrios
 enum _op_binario {
-  ASIGN,
-  MAS,
-  MENOS,
-  POR,
-  DIV,
-  LT,
-  LE,
-  EQ
+  B_ASIGN,
+  B_MAS,
+  B_MENOS,
+  B_POR,
+  B_DIV,
+  B_LT,
+  B_LE,
+  B_EQ
 };
 
 // Operandos de un operador binario o unario
