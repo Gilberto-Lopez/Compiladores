@@ -172,3 +172,5 @@ int new_method (Metodo**, char*, int, Expr*, List*);
 int new_value (Valor**, Type_Valor, int, char*);
 int new_expr (Expr**, Type_Expr, Op_Binario, Operandos*, Construccion*,
   Metodo*, Valor*);
+
+void genera_arbol (char**, Programa*);

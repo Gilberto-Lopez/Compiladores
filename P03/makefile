@@ -7,7 +7,7 @@ lex.yy.c: lexer.l parser.tab.h asa.h
 	flex lexer.l
 
 parser: lex.yy.c parser.tab.c parser.tab.h asa.c asa.h
-	gcc parser.tab.c lex.yy.c asa.c -lfl -o parser
+	gcc parser.tab.c lex.yy.c asa.c -lfl -lm -o parser
 
 clean:
 	rm parser{,.output,.tab*} lex.yy.c

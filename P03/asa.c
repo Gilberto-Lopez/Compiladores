@@ -1,6 +1,16 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <math.h>
 #include "asa.h"
+
+// Templates para valores.
+static char* const TMPL_TT = "bool[tt]";
+static char* const TMPL_FF = "bool[ff]";
+static char* const TMPL_NULL = "NULL";
+static char* const TMPL_INT = "int[%d]";
+static char* const TMPL_STRING = "string[%s]";
+static char* const TMPL_ID = "id[%s]";
 
 /* Crea un nuevo nodo con ELEMENTO. Guarda la referencia en NODO. Regresa 0 si
  * pudo crear el nodo. */
@@ -185,4 +195,44 @@ new_expr (Expr** expresion, Type_Expr tipo, Op_Binario op, Operandos* ops,
   e->literal = literal;
   *expresion = e;
   return 0;
+}
+
+void
+genera_arbol (char** buffer, Programa* programa) {
+  return;
+}
+
+static void
+print_value (char** buffer, Valor* v) {
+  char* template;
+  size_t l;
+  char* s;
+  switch (v->tipo) {
+    case V_TRUE:
+      *buffer = TMPL_TT;
+      break;
+    case V_FALSE:
+      *buffer = TMPL_FF;
+      break;
+    case V_INT:
+      l = v->val ? (size_t) ceil(log10(v->val)) : 1;
+      s = (char*) malloc((5+l)*sizeof(char));
+      sprintf(s, TMPL_INT, v->val);
+      *buffer = s;
+      break;
+    case V_ID:
+      l = strlen(v->cadena);
+      s = (char*) malloc((4+l)*sizeof(char));
+      sprintf(s, TMPL_ID, v->cadena);
+      *buffer = s;
+      break;
+    case V_STRING:
+      l = strlen(v->cadena);
+      s = (char*) malloc((8+l)*sizeof(char));
+      sprintf(s, TMPL_STRING, v->cadena);
+      *buffer = s;
+      break;
+    case V_NULL:
+      *buffer = TMPL_NULL;
+  }
 }

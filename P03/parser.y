@@ -11,6 +11,7 @@
 
   //extern int yyparse ();
   void yyerror (char*);
+  //char* asa;
   
   #include "asa.h"
 %}
@@ -43,7 +44,7 @@ program:
     { Programa* p; new_program (&p);
       agrega (p->clases, $1);
       $$ = p;
-      //generar_arbol (p);
+      //generar_arbol (&asa, p);
     }
   | program class
     { agrega ($1->clases, $2); }
@@ -294,7 +295,10 @@ yyerror (char* s) {
 int
 main (int argc, char* argv[]) {
   yyin = fopen (argv[1],"r");
+  //yyout = fopen (argv[2],"w");
   yyparse ();
   fclose (yyin);
+  //fwrite (asa, sizeof(char), strlen(asa), yyout);
+  //fclose (yyout);
   return 0;
 }
