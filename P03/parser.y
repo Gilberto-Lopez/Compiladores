@@ -128,8 +128,20 @@ expr:
       $$ = e;
     }
   | expr '.' ID '(' exprc_list ')'
+    { Metodo* m; new_method (&m, $3, 0, $1, $5);
+      Expr* e; new_expr (&e, E_APP, 0, NULL, NULL, m, NULL);
+      $$ = e;
+    }
   | expr '.' SUPER '.' ID '(' exprc_list ')'
+    { Metodo* m; new_method (&m, $5, 1, $1, $7);
+      Expr* e; new_expr (&e, E_APP, 0, NULL, NULL, m, NULL);
+      $$ = e;
+    }
   | ID '(' exprc_list ')'
+    { Metodo* m; new_method (&m, $1, 0, NULL, $3);
+      Expr* e; new_expr (&e, E_APP, 0, NULL, NULL, m, NULL);
+      $$ = e;
+    }
   | IF '(' expr ')' '{' expr_list '}'
     { Construccion* c; new_construct (&c, E_IF, $3, $6, NULL);
       Expr* e; new_expr (&e, E_IF, 0, NULL, c, NULL, NULL);
@@ -146,13 +158,17 @@ expr:
       $$ = e;
     }
   | SWITCH '(' ID ')' '{' case_list default_clause '}'
-    { Valor* v; new_value (&v, V_ID, 0, $1);
+    { Valor* v; new_value (&v, V_ID, 0, $3);
       Expr* e_; new_expr (&e_, E_VAL, 0, NULL, NULL, NULL, v);
       Construccion* c; new_construct (&c, E_SWITCH, e_, $6, $7);
       Expr* e; new_expr (&e, E_SWITCH, 0, NULL, c, NULL, NULL);
       $$ = e;
     }
   | NEW TYPE
+    { Metodo* m; new_method (&m, $2, 0, NULL, NULL);
+      Expr* e; new_expr (&e, E_INST, 0, NULL, NULL, m, NULL);
+      $$ = e;
+    }
   | expr '+' expr
     { Operandos* o; new_operands (&o, $1, $3);
       Expr* e; new_expr (&e, E_OPB, B_MAS, o, NULL, NULL, NULL);
@@ -252,7 +268,8 @@ case_list:
     }
   | case_list CASE INTEGER ':' expr_list BREAK ';'
     { Valor* v; new_value (&v, V_INT, $3, NULL);
-      Construccion* c; new_construct (&c, E_CASE, v, $5, NULL);
+      Expr* e_; new_expr (&e_, E_VAL, 0, NULL, NULL, NULL, v);
+      Construccion* c; new_construct (&c, E_CASE, e_, $5, NULL);
       agrega ($1, c);
     }
   ;

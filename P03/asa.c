@@ -121,7 +121,7 @@ new_operands (Operandos** operandos, Expr* izq, Expr* der) {
  * o un CASE "case GAURDIA: FST break;". */
 int
 new_construct (Construccion** construccion, Type_Expr tipo, Expr* guardia,
-  List* fst, Lst* snd) {
+  List* fst, List* snd) {
   Construccion* c = (Construccion*) malloc (sizeof (Construccion));
   if (c == NULL)
     return 1;
@@ -134,11 +134,14 @@ new_construct (Construccion** construccion, Type_Expr tipo, Expr* guardia,
 }
 
 int
-new_method (Metodo** metodo, char* nombre) {
+new_method (Metodo** metodo, char* nombre, int super, Expr* msg, List* args) {
   Metodo* m = (Metodo*) malloc (sizeof (Metodo));
-  if (m == NULL || nueva_lista (& m->args, L_EXPRC))
+  if (m == NULL)
     return 1;
   m->nombre = nombre;
+  m->super = super;
+  m->msg = msg;
+  m->args = args;
   *metodo = m;
   return 0;
 }

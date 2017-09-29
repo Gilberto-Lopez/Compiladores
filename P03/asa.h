@@ -119,9 +119,11 @@ struct _construccion {
   List* snd;
 };
 
-// Llamada a método del lenguaje (o instanciacion con args NULL)
+// Llamada a método del lenguaje (o instanciacion con args y msg NULL)
 struct _metodo {
   char* nombre;
+  int super;
+  Expr* msg;
   List* args;
 };
 
@@ -152,7 +154,7 @@ struct _expr {
   Operandos* ops;
   Construccion* cons;
   Metodo* app;
-  Valor literal;
+  Valor* literal;
 };
 
 int nueva_lista (List**, Type_List);
@@ -166,7 +168,7 @@ int new_formal (Formal**, char*, char*);
 int new_feature (Feature**, Type_Feature, char*, char*, Expr*, List*, List*);
 int new_operands (Operandos**, Expr*, Expr*);
 int new_construct (Construccion**, Type_Expr, Expr*, List*, List*);
-int new_method (Metodo**, char*);
+int new_method (Metodo**, char*, int, Expr*, List*);
 int new_value (Valor**, Type_Valor, int, char*);
 int new_expr (Expr**, Type_Expr, Op_Binario, Operandos*, Construccion*,
   Metodo*, Valor*);
