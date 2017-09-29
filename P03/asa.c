@@ -202,6 +202,8 @@ genera_arbol (char** buffer, Programa* programa) {
   return;
 }
 
+/* Pretty printer para valores. Genera la representación de V y la guarda en
+ * BUFFER. */
 static void
 print_value (char** buffer, Valor* v) {
   char* template;
@@ -215,20 +217,20 @@ print_value (char** buffer, Valor* v) {
       *buffer = TMPL_FF;
       break;
     case V_INT:
-      l = v->val ? (size_t) ceil(log10(v->val)) : 1;
-      s = (char*) malloc((5+l)*sizeof(char));
+      l = v->val > 1 ? (size_t) ceil(log10(v->val)) : 1;
+      s = (char*) malloc((6+l)*sizeof(char));
       sprintf(s, TMPL_INT, v->val);
       *buffer = s;
       break;
     case V_ID:
       l = strlen(v->cadena);
-      s = (char*) malloc((4+l)*sizeof(char));
+      s = (char*) malloc((5+l)*sizeof(char));
       sprintf(s, TMPL_ID, v->cadena);
       *buffer = s;
       break;
     case V_STRING:
       l = strlen(v->cadena);
-      s = (char*) malloc((8+l)*sizeof(char));
+      s = (char*) malloc((9+l)*sizeof(char));
       sprintf(s, TMPL_STRING, v->cadena);
       *buffer = s;
       break;
