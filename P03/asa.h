@@ -168,3 +168,5 @@ int new_operands (Operandos**, Expr*, Expr*);
 int new_construct (Construccion**, Type_Expr, Expr*, List*, List*);
 int new_method (Metodo**, char*);
 int new_value (Valor**, Type_Valor, int, char*);
+int new_expr (Expr**, Type_Expr, Op_Binario, Operandos*, Construccion*,
+  Metodo*, Valor*);

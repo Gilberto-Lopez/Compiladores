@@ -115,6 +115,10 @@ new_operands (Operandos** operandos, Expr* izq, Expr* der) {
   return 0;
 }
 
+/* Genera una nueva construcción del lenguaje en CONSTRUCCION. La construcción
+ * puede ser un IF "if (GUARDIA) {FST} [else {SND}];",  un WHILE
+ * "while (GAURDIA) {FST};", un SWITCH "switch (GAURDIA) {FST default: SND};"
+ * o un CASE "case GAURDIA: FST break;". */
 int
 new_construct (Construccion** construccion, Type_Expr tipo, Expr* guardia,
   List* fst, Lst* snd) {
@@ -139,6 +143,8 @@ new_method (Metodo** metodo, char* nombre) {
   return 0;
 }
 
+/* Crea un nuevo valor en VALOR, puede ser un ENTERO dado por VAL (o un valor
+ * booleano), un STRING CADENA o NULL. */
 int
 new_value (Valor** valor, Type_Valor tipo, int val, char* cadena) {
   Valor* v = (Valor*) malloc (sizeof (Valor));
@@ -153,7 +159,7 @@ new_value (Valor** valor, Type_Valor tipo, int val, char* cadena) {
 
 int
 new_expr (Expr** expresion, Type_Expr tipo, Op_Binario op, Operandos* ops,
-  Construccion* cons, Metodo* app, Valor literal) {
+  Construccion* cons, Metodo* app, Valor* literal) {
   Expr* e = (Expr*) malloc (sizeof (Expr));
   if (e == NULL)
     return 1;

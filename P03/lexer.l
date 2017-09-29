@@ -38,12 +38,8 @@ simbolo [.,:;(){}=]
 [A-Z]({digito}|{letra}|"_")*  { yylval.vstring = yytext;
                                 return TYPE;
                               }
-"true"                        { yylval.vinteger = 1;
-                                return TRUE_K;
-                              }
-"false"                       { yylval.vinteger = 0;
-                                return FALSE_K;
-                              }
+"true"                        return TRUE_K;
+"false"                       return FALSE_K;
 "null"                        return NULL_K;
 {digito}+                     { yylval.vinteger = atoi(yytext);
                                 return INTEGER;
