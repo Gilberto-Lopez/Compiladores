@@ -104,6 +104,9 @@ new_feature (Feature** feature, Type_Feature tipo, char* nombre_tipo, char* id,
   return 0;
 }
 
+/* Crea la representación de los oeprandos de un operados binario/unario en
+ * OPERANDOS, donde IZQ es el izquierdo (o único para unario) y DER el derecho
+ * (o NULL para unario). */
 int
 new_operands (Operandos** operandos, Expr* izq, Expr* der) {
   Operandos* o = (Operandos*) malloc (sizeof (Operandos));
@@ -133,6 +136,11 @@ new_construct (Construccion** construccion, Type_Expr tipo, Expr* guardia,
   return 0;
 }
 
+/* Crea un struct que representa una llamada a método o una instanciación en
+ * METODO. SUPER es el flag que determina si hay una llamada ".super", MSG es el
+ * una expresión que representará un objeto, ARGS es la lista de argumentos para
+ * el método, NOMBRE el nombre de este. Para instanciación solo importa NOMBRE
+ * pues la sintaxis es "new NOMBRE;". */
 int
 new_method (Metodo** metodo, char* nombre, int super, Expr* msg, List* args) {
   Metodo* m = (Metodo*) malloc (sizeof (Metodo));
@@ -160,6 +168,9 @@ new_value (Valor** valor, Type_Valor tipo, int val, char* cadena) {
   return 0;
 }
 
+/* Crea una nueva expresión en EXPRESION que puede ser un OPERADOR BINARIO/
+ * UNARIO, con operandos OPS, una construcción del lenguaje dada por CONS,
+ * llamada a método/instancación APP o una constante LITERAL. */
 int
 new_expr (Expr** expresion, Type_Expr tipo, Op_Binario op, Operandos* ops,
   Construccion* cons, Metodo* app, Valor* literal) {
