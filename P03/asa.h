@@ -114,6 +114,7 @@ struct _operandos {
 // fst la lista de CASEs y snd la lista de expresiones del DEFAULT
 struct _construccion {
   Expr* guardia;
+  Type_Expr tipo;
   List* fst;
   List* snd;
 };
@@ -162,8 +163,8 @@ int agrega_elemento (List*, void*);
 int new_program (Programa**);
 int new_class (Class**, char*, char*, List*); 
 int new_formal (Formal**, char*, char*);
-int new_feature (Feature**, Type_Feature, char*, char*, Expr*);
+int new_feature (Feature**, Type_Feature, char*, char*, Expr*, List*, List*);
 int new_operands (Operandos**, Expr*, Expr*);
-int new_construct (Construccion**, Type_Expr, Expr*);
+int new_construct (Construccion**, Type_Expr, Expr*, List*, List*);
 int new_method (Metodo**, char*);
 int new_value (Valor**, Type_Valor, int, char*);

@@ -16,41 +16,38 @@
 %}
 %start program
 %union{
-  char* string;
-  int integer;
+  char* vstring;
+  int vinteger;
   List* lista;
   Programa* programa;
   Class* clase;
   Feature* miembro;
   Formal* param;
   Expr* exp;
-  Construccion* constr;
 }
 %token CLASS TYPE ID INHERITS SUPER WHILE SWITCH NEW INTEGER STRING BREAK DEFAULT CASE ELSE IF RETURN NULL_K TRUE_K FALSE_K
 %nonassoc '<' LE EQ
 %left '+' '-'
 %left '*' '/'
-%type<string> TYPE ID STRING
-%type<integer> INTEGER
-%type<lista> formal_list expr_list exprc_list case_list
+%type<vstring> TYPE ID STRING
+%type<vinteger> INTEGER TRUE_K FALSE_K
+%type<lista> formal_list expr_list exprc_list case_list feature_list default_clause default_clause
 %type<programa> program
 %type<clase> class
 %type<miembro> feature
 %type<param> formal
 %type<exp> expr
-%type<constr> default_clause
 %%
 program:
   class
-    {
-      Programa* p;
+    { Programa* p;
       new_program (&p);
       agrega (p->clases, $1);
       $$ = p;
       //generar_arbol (p);
     }
   | program class
-    { agrega ($$->clases, $2); }
+    { agrega ($1->clases, $2); }
   ;
 
 class:
@@ -74,21 +71,34 @@ feature_list:
       $$ = l;
     }
   | feature_list feature
-    { agrega ($$, $2); }
+    { agrega ($1, $2); }
   ;
 
 feature:
   TYPE ID '(' formal_list ')' '{' expr_list RETURN expr ';' '}'
+    { Feature* f;
+      new_feature (&f, F_METHOD, $1, $2, $9, $4, $7);
+      $$ = f;
+    }
   | TYPE ID ';'
+    { Feature* f;
+      new_feature (&f, F_DEC, $1, $2, NULL, NULL, NULL);
+      $$ = f;
+    }
   | TYPE ID '=' expr ';'
+    { Feature* f;
+      new_feature (&f, F_DASGN, $1, $2, $4, NULL, NULL);
+      $$ = f; 
+    }
   ;
 
 /* Listas (posiblemente vacías de) de formal. */
 formal_list:
   %empty
-    { List* l;
+    { $$ = NULL;
+    /*List* l;
       nueva_lista (&l, L_FORMAL);
-      $$ = l;
+      $$ = l;*/
     }
   | formal
     { List* l;
@@ -97,7 +107,7 @@ formal_list:
       $$ = l;
     }
   | formal_list ',' formal
-    { agrega ($$, $3); }
+    { agrega ($1, $3); }
   ;
 
 /* Listas (posiblemente vacías) de expr. */
@@ -108,13 +118,12 @@ expr_list:
       $$ = l;
     }
   | expr_list expr ';'
-    { agrega ($$, $2); }
+    { agrega ($1, $2); }
   ;
 
 formal:
   TYPE ID
-    {
-      Formal* f;
+    { Formal* f;
       new_formal (&f, $1, $2);
       $$ = f;
     }
@@ -150,9 +159,10 @@ expr:
 /* Listas (posiblemente vacías) de expr con separación de comas. */
 exprc_list:
   %empty
-    { List* l;
+    { $$ = NULL;
+    /*List* l;
       nueva_lista (&l, L_EXPRC);
-      $$ = l;
+      $$ = l;*/
     }
   | expr
     { List* l;
@@ -161,19 +171,31 @@ exprc_list:
       $$ = l;
     }
   | exprc_list ',' expr
-    { agrega ($$, $3); }
+    { agrega ($1, $3); }
   ;
 
 /* Listas (posiblemente vacías) de cases. */
 case_list:
   %empty
+    { List* l;
+      nueva_lista (&l, L_CASE);
+      $$ = l;
+    }
   | case_list CASE INTEGER ':' expr_list BREAK ';'
+    { Valor* v;
+      new_value (&v, V_INT, $3, NULL);
+      Construccion* c;
+      new_construct (&c, E_CASE, v, $5, NULL);
+      agrega ($1, c);
+    }
   ;
 
 /* Claúsula default (opcional) para el switch. */
 default_clause:
   %empty
+    { $$ = NULL; }
   | DEFAULT ':' expr_list
+    { $$ = $3; }
   ;
 %%
 /* Imprime mensajes de error por yyparse (). */

@@ -85,18 +85,21 @@ new_formal (Formal** formal, char* tipo, char* id) {
   return 0;
 }
 
+/* Crea un nuevo miembro en FEATURE, puede ser la declaración de una variable
+ * "NOMBRE_TIPO ID;", declaración y asignación "NOMBRE_TIPO ID = ASGNR;" o un
+ * método "NOMBRE_TIPO ID (PARAMS) { BODY return ASGNR; }". */
 int
 new_feature (Feature** feature, Type_Feature tipo, char* nombre_tipo, char* id,
-  Expr* asgnr) {
+  Expr* asgnr, List* params, List* body) {
   Feature* f = (Feature*) malloc (sizeof (Feature));
-  if (f == NULL
-    || nueva_lista (& f->params,L_FORMAL)
-    || nueva_lista (& f->body, L_EXPR))
+  if (f == NULL)
     return 1;
   f->tipo = tipo;
   f->nombre_tipo = nombre_tipo;
   f->id = id;
   f->asgnr = asgnr;
+  f->params = params;
+  f->body = body;
   *feature = f;
   return 0;
 }
@@ -113,36 +116,15 @@ new_operands (Operandos** operandos, Expr* izq, Expr* der) {
 }
 
 int
-new_construct (Construccion** construccion, Type_Expr tipo, Expr* guardia) {
+new_construct (Construccion** construccion, Type_Expr tipo, Expr* guardia,
+  List* fst, Lst* snd) {
   Construccion* c = (Construccion*) malloc (sizeof (Construccion));
   if (c == NULL)
     return 1;
+  c->tipo = tipo;
   c->guardia = guardia;
-  int f,s;
-  switch (tipo) {
-    case E_IF:
-      f = nueva_lista (& c->fst, L_EXPR);
-      s = nueva_lista (& c->snd, L_EXPR);
-      break;
-    case E_WHILE:
-      f = nueva_lista (& c->fst, L_EXPR);
-      c->snd = NULL;
-      s = 0;
-      break;
-    case E_SWITCH:
-      f = nueva_lista (& c->fst, L_CASE);
-      s = nueva_lista (& c->snd, L_EXPR);
-      break;
-    case E_CASE:
-      f = nueva_lista (& c->fst, L_EXPR);
-      c->snd = NULL;
-      s = 0;
-      break;
-    default:
-      return 1;
-  }
-  if (f || s)
-    return 1;
+  c->fst = fst;
+  c->snd = snd;
   *construccion = c;
   return 0;
 }
