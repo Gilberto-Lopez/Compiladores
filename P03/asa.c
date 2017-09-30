@@ -4,6 +4,11 @@
 #include <math.h>
 #include "asa.h"
 
+/*
+ * PRETTYPRINT
+ * Generaión del árbol de sintaxis abstracta.
+ */
+/* TEMPLATES */
 // Templates para valores.
 static char* const TMPL_TT = "bool[tt]";
 static char* const TMPL_FF = "bool[ff]";
@@ -26,6 +31,14 @@ static char* const TMPL_LT = "lt(%s,%s)"; // 5+1
 static char* const TMPL_LE = "le(%s,%s)"; // 5+1
 static char* const TMPL_EQ = "eq(%s,%s)"; // 5+1
 static char* const TMPL_NEG = "neg(%s)"; // 5+1
+/* PROTOTIPOS */
+// Prototipos de los pretty printers auxiliares.
+static void print_value (char**, Valor*);
+static void print_construct (char**, Construccion*);
+static void print_binary (char**, Op_Binario, Operandos*);
+static void print_expr (char**, Expr*);
+static void print_method (char**, Metodo*);
+static void print_list (char**, List*);
 
 /* Crea un nuevo nodo con ELEMENTO. Guarda la referencia en NODO. Regresa 0 si
  * pudo crear el nodo. */
@@ -263,25 +276,25 @@ print_construct (char** buffer, Construccion* c) {
   switch (c->tipo) {
     case E_IF:
       print_expr(&g, c->guardia);
-      print_list(&i, c->izq);
+      print_list(&i, c->fst);
       l = strlen(g) + strlen(i);
-      if (c->der != NULL) {
-        print_list(&d, c->der);
+      if (c->snd != NULL) {
+        print_list(&d, c->snd);
         l += strlen(d);
       } else {
         l++;
       }
       s = (char*) malloc((7+l)*sizeof(char));
       sprintf(s, TMPL_IF, g, i,
-        (c->der != NULL)? d : "-");
+        (c->snd != NULL)? d : "-");
       *buffer = s;
       break;
     case E_WHILE:
       print_expr(&g, c->guardia);
-      print_list(&i, c->izq);
+      print_list(&i, c->fst);
       l = strlen(g) + strlen(i);
       s = (char*) malloc((9+l)*sizeof(char));
-      sprintf(s, TMPL_IF, g, i);
+      sprintf(s, TMPL_WHILE, g, i);
       *buffer = s;
       break;
     case E_SWITCH:
