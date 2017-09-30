@@ -8,9 +8,24 @@
 static char* const TMPL_TT = "bool[tt]";
 static char* const TMPL_FF = "bool[ff]";
 static char* const TMPL_NULL = "NULL";
-static char* const TMPL_INT = "int[%d]";
-static char* const TMPL_STRING = "string[%s]";
-static char* const TMPL_ID = "id[%s]";
+static char* const TMPL_INT = "int[%d]"; // 5+1
+static char* const TMPL_STRING = "string[%s]"; // 8+1
+static char* const TMPL_ID = "id[%s]"; // 4+1
+// Templates para construcciones.
+static char* const TMPL_IF = "if(%s,%s,%s)"; // 6+1
+static char* const TMPL_WHILE = "while(%s,%s)"; // 8+1
+// SWITCH
+// CASE
+// Templates para operadores binarios y negación
+static char* const TMPL_ASGN = "asgn(%s,%s)"; // 7+1
+static char* const TMPL_SUMA = "suma(%s,%s)"; // 7+1
+static char* const TMPL_PROD = "prod(%s,%s)"; // 7+1
+static char* const TMPL_SUB = "sub(%s,%s)"; // 6+1
+static char* const TMPL_DIV = "div(%s,%s)"; // 6+1
+static char* const TMPL_LT = "lt(%s,%s)"; // 5+1
+static char* const TMPL_LE = "le(%s,%s)"; // 5+1
+static char* const TMPL_EQ = "eq(%s,%s)"; // 5+1
+static char* const TMPL_NEG = "neg(%s)"; // 5+1
 
 /* Crea un nuevo nodo con ELEMENTO. Guarda la referencia en NODO. Regresa 0 si
  * pudo crear el nodo. */
@@ -206,7 +221,6 @@ genera_arbol (char** buffer, Programa* programa) {
  * BUFFER. */
 static void
 print_value (char** buffer, Valor* v) {
-  char* template;
   size_t l;
   char* s;
   switch (v->tipo) {
@@ -237,4 +251,134 @@ print_value (char** buffer, Valor* v) {
     case V_NULL:
       *buffer = TMPL_NULL;
   }
+}
+
+static void
+print_construct (char** buffer, Construccion* c) {
+  char* g;
+  char* i;
+  char* d;
+  char* s;
+  size_t l;
+  switch (c->tipo) {
+    case E_IF:
+      print_expr(&g, c->guardia);
+      print_list(&i, c->izq);
+      l = strlen(g) + strlen(i);
+      if (c->der != NULL) {
+        print_list(&d, c->der);
+        l += strlen(d);
+      } else {
+        l++;
+      }
+      s = (char*) malloc((7+l)*sizeof(char));
+      sprintf(s, TMPL_IF, g, i,
+        (c->der != NULL)? d : "-");
+      *buffer = s;
+      break;
+    case E_WHILE:
+      print_expr(&g, c->guardia);
+      print_list(&i, c->izq);
+      l = strlen(g) + strlen(i);
+      s = (char*) malloc((9+l)*sizeof(char));
+      sprintf(s, TMPL_IF, g, i);
+      *buffer = s;
+      break;
+    case E_SWITCH:
+      // Terminar
+      break;
+    case E_CASE:
+      // Terminar
+      break;
+    default:
+      // Este caso no ocurre
+      return;
+  }
+}
+
+/* Pretty printer para operadores binarios. Genera la representación del
+ * operador B con operandos O y la guarda en BUFFER. */
+static void
+print_binary (char** buffer, Op_Binario b, Operandos* o) {
+  char* i;
+  char* d;
+  char* s;
+  print_expr (&i, o->izq);
+  print_expr (&d, o->der);
+  size_t l = strlen(i) + strlen(d);
+  char* tmpl;
+  switch (b) {
+    case B_ASIGN:
+      l += 8;
+      tmpl = TMPL_ASGN;
+      break;
+    case B_MAS:
+      l += 8;
+      tmpl = TMPL_SUMA;
+      break;
+    case B_MENOS:
+      l += 7;
+      tmpl = TMPL_SUB;
+      break;
+    case B_POR:
+      l += 8;
+      tmpl = TMPL_PROD;
+      break;
+    case B_DIV:
+      l += 7;
+      tmpl = TMPL_DIV;
+      break;
+    case B_LT:
+      l += 6;
+      tmpl = TMPL_LT;
+      break;
+    case B_LE:
+      l += 6;
+      tmpl = TMPL_LE;
+      break;
+    case B_EQ:
+      l += 6;
+      tmpl = TMPL_EQ;
+  }
+  s = (char*) malloc(l*sizeof(char));
+  sprintf(s, tmpl, i, d);
+  *buffer = s;
+}
+
+/* Pretty printer para expresiones. Genera la representación de la expresión E
+ * y la guarda en BUFFER. */
+static void
+print_expr (char** buffer, Expr* e) {
+  char* o;
+  size_t l;
+  char* s;
+  switch (e->tipo) {
+    case E_APP:
+      print_method (buffer, e->app);
+      break;
+    case E_IF:
+    case E_WHILE:
+    case E_SWITCH:
+    case E_INST:
+    case E_CASE:
+      print_construct(buffer, e->cons);
+      break;
+    case E_OPB:
+      print_binary(buffer, e->op, e->ops);
+      break;
+    case E_NEG:
+      print_expr (&o, e->ops->izq);
+      l = 6 + strlen(o);
+      s = (char*) malloc(l*sizeof(char));
+      sprintf (s, TMPL_NEG, o);
+      *buffer = s;
+      break;
+    case E_VAL:
+      print_value(buffer, e->literal);
+  }
+}
+
+static void
+print_method (char** buffer, Metodo* m) {
+  return;
 }
