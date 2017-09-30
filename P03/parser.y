@@ -14,6 +14,9 @@
   //char* asa;
   
   #include "asa.h"
+
+  // Flag para listas evitar errores de la forma 'metodo(, ...,<>);'
+  int empty;
 %}
 %start program
 %union{
@@ -89,18 +92,25 @@ feature:
 /* Listas (posiblemente vacías de) de formal. */
 formal_list:
   %empty
-    { $$ = NULL;
+    { empty = 1;
+      $$ = NULL;
     /*List* l;
       nueva_lista (&l, L_FORMAL);
       $$ = l;*/
     }
   | formal
-    { List* l; nueva_lista (&l, L_FORMAL);
+    { empty = 0;
+      List* l; nueva_lista (&l, L_FORMAL);
       agrega (l, $1);
       $$ = l;
     }
   | formal_list ',' formal
-    { agrega ($1, $3); }
+    { if (!empty) {
+        agrega ($1, $3);
+      } else {
+        yyerror ("Parámetro vacío.");
+      }
+    }
   ;
 
 /* Listas (posiblemente vacías) de expr. */
@@ -247,18 +257,25 @@ expr:
 /* Listas (posiblemente vacías) de expr con separación de comas. */
 exprc_list:
   %empty
-    { $$ = NULL;
+    { empty = 1;
+      $$ = NULL;
     /*List* l;
       nueva_lista (&l, L_EXPRC);
       $$ = l;*/
     }
   | expr
-    { List* l; nueva_lista (&l, L_EXPRC);
+    { empty = 0;
+      List* l; nueva_lista (&l, L_EXPRC);
       agrega (l, $1);
       $$ = l;
     }
   | exprc_list ',' expr
-    { agrega ($1, $3); }
+    { if (!empty) {
+        agrega ($1, $3);
+      } else {
+        yyerror ("Argumento vacío.");
+      }
+    }
   ;
 
 /* Listas (posiblemente vacías) de cases. */
@@ -286,9 +303,8 @@ default_clause:
 /* Imprime mensajes de error por yyparse (). */
 void
 yyerror (char* s) {
-  (void) s;
-  fprintf(stderr, "*** Error sintáctico en línea %d: '%s'\n",
-    yylineno, yytext);
+  fprintf(stderr, "*** Error sintáctico en línea %d: '%s'\n\t%s\n",
+    yylineno, yytext,s);
   //exit(1);
 }
 

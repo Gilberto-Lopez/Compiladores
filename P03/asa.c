@@ -10,15 +10,16 @@
  */
 /* TEMPLATES */
 // Templates para valores.
-static char* const TMPL_TT = "bool[tt]";
-static char* const TMPL_FF = "bool[ff]";
-static char* const TMPL_NULL = "NULL";
+static char* const TMPL_TT = "bool[tt]"; // 8
+static char* const TMPL_FF = "bool[ff]"; // 8
+static char* const TMPL_NULL = "NULL"; // 4
 static char* const TMPL_INT = "int[%d]"; // 5+1
 static char* const TMPL_STRING = "string[%s]"; // 8+1
 static char* const TMPL_ID = "id[%s]"; // 4+1
 // Templates para construcciones.
 static char* const TMPL_IF = "if(%s,%s,%s)"; // 6+1
 static char* const TMPL_WHILE = "while(%s,%s)"; // 8+1
+static char* const TMPL_SWITCH = "switch(%s,%s,%s)"; // 10+1
 // SWITCH
 // CASE
 // Templates para operadores binarios y negación
@@ -33,12 +34,12 @@ static char* const TMPL_EQ = "eq(%s,%s)"; // 5+1
 static char* const TMPL_NEG = "neg(%s)"; // 5+1
 /* PROTOTIPOS */
 // Prototipos de los pretty printers auxiliares.
-static void print_value (char**, Valor*);
-static void print_construct (char**, Construccion*);
-static void print_binary (char**, Op_Binario, Operandos*);
-static void print_expr (char**, Expr*);
-static void print_method (char**, Metodo*);
-static void print_list (char**, List*);
+static size_t print_value (char**, Valor*);
+static size_t print_construct (char**, Construccion*);
+static size_t print_binary (char**, Op_Binario, Operandos*);
+static size_t print_expr (char**, Expr*);
+static size_t print_method (char**, Metodo*);
+static size_t print_list (char**, List*);
 
 /* Crea un nuevo nodo con ELEMENTO. Guarda la referencia en NODO. Regresa 0 si
  * pudo crear el nodo. */
@@ -231,42 +232,46 @@ genera_arbol (char** buffer, Programa* programa) {
 }
 
 /* Pretty printer para valores. Genera la representación de V y la guarda en
- * BUFFER. */
-static void
+ * BUFFER. Regresa la longitud de la cadena guardada en BUFFER. */
+static size_t
 print_value (char** buffer, Valor* v) {
   size_t l;
   char* s;
   switch (v->tipo) {
     case V_TRUE:
       *buffer = TMPL_TT;
+      l = 8;
       break;
     case V_FALSE:
       *buffer = TMPL_FF;
+      l = 8;
       break;
     case V_INT:
-      l = v->val > 1 ? (size_t) ceil(log10(v->val)) : 1;
-      s = (char*) malloc((6+l)*sizeof(char));
+      l = 6 + (v->val > 1 ? (size_t) ceil(log10(v->val)) : 1);
+      s = (char*) malloc(l*sizeof(char));
       sprintf(s, TMPL_INT, v->val);
       *buffer = s;
       break;
     case V_ID:
-      l = strlen(v->cadena);
-      s = (char*) malloc((5+l)*sizeof(char));
+      l = 5 + strlen(v->cadena);
+      s = (char*) malloc(l*sizeof(char));
       sprintf(s, TMPL_ID, v->cadena);
       *buffer = s;
       break;
     case V_STRING:
-      l = strlen(v->cadena);
-      s = (char*) malloc((9+l)*sizeof(char));
+      l = 9 + strlen(v->cadena);
+      s = (char*) malloc(l*sizeof(char));
       sprintf(s, TMPL_STRING, v->cadena);
       *buffer = s;
       break;
     case V_NULL:
       *buffer = TMPL_NULL;
+      l = 4;
   }
+  return l;
 }
 
-static void
+static size_t
 print_construct (char** buffer, Construccion* c) {
   char* g;
   char* i;
@@ -275,50 +280,59 @@ print_construct (char** buffer, Construccion* c) {
   size_t l;
   switch (c->tipo) {
     case E_IF:
-      print_expr(&g, c->guardia);
-      print_list(&i, c->fst);
-      l = strlen(g) + strlen(i);
-      if (c->snd != NULL) {
-        print_list(&d, c->snd);
-        l += strlen(d);
-      } else {
+      l = 7 + print_expr(&g, c->guardia) + print_list(&i, c->fst);
+      if (c->snd != NULL)
+        l += print_list(&d, c->snd);
+      else
         l++;
-      }
-      s = (char*) malloc((7+l)*sizeof(char));
+      s = (char*) malloc(l*sizeof(char));
       sprintf(s, TMPL_IF, g, i,
         (c->snd != NULL)? d : "-");
       *buffer = s;
       break;
     case E_WHILE:
-      print_expr(&g, c->guardia);
-      print_list(&i, c->fst);
-      l = strlen(g) + strlen(i);
-      s = (char*) malloc((9+l)*sizeof(char));
+      l = 9 + print_expr(&g, c->guardia) + print_list(&i, c->fst);
+      s = (char*) malloc(l*sizeof(char));
       sprintf(s, TMPL_WHILE, g, i);
       *buffer = s;
       break;
     case E_SWITCH:
-      // Terminar
+      l = 11 + print_expr(&g, c->guardia);
+      if (c->fst->elementos > 0) {
+        l += print_list(&i, c->fst);
+      } else {
+        l++;
+        i = "-";
+      }
+      if (c->snd != NULL) {
+        l += print_list(&d, c->snd);
+      } else {
+        l++;
+        d = "-";
+      }
+      s = (char*) malloc(l*sizeof(char));
+      sprintf(s, TMPL_SWITCH, g, i, d);
+      *buffer = s;
       break;
     case E_CASE:
       // Terminar
       break;
     default:
       // Este caso no ocurre
-      return;
+      l = 0;
   }
+  return l;
 }
 
 /* Pretty printer para operadores binarios. Genera la representación del
- * operador B con operandos O y la guarda en BUFFER. */
-static void
+ * operador B con operandos O y la guarda en BUFFER. Regresa la longitud de la
+ * cadena guardada en BUFFER. */
+static size_t
 print_binary (char** buffer, Op_Binario b, Operandos* o) {
   char* i;
   char* d;
   char* s;
-  print_expr (&i, o->izq);
-  print_expr (&d, o->der);
-  size_t l = strlen(i) + strlen(d);
+  size_t l = print_expr (&i, o->izq) + print_expr (&d, o->der);
   char* tmpl;
   switch (b) {
     case B_ASIGN:
@@ -356,42 +370,45 @@ print_binary (char** buffer, Op_Binario b, Operandos* o) {
   s = (char*) malloc(l*sizeof(char));
   sprintf(s, tmpl, i, d);
   *buffer = s;
+  return l;
 }
 
 /* Pretty printer para expresiones. Genera la representación de la expresión E
- * y la guarda en BUFFER. */
-static void
+ * y la guarda en BUFFER. Regresa la longitud de la cadena guardada en
+ * BUFFER. */
+static size_t
 print_expr (char** buffer, Expr* e) {
   char* o;
   size_t l;
   char* s;
   switch (e->tipo) {
     case E_APP:
-      print_method (buffer, e->app);
-      break;
+    case E_INST:
+      return print_method(buffer, e->app);
     case E_IF:
     case E_WHILE:
     case E_SWITCH:
-    case E_INST:
     case E_CASE:
-      print_construct(buffer, e->cons);
-      break;
+      return print_construct(buffer, e->cons);
     case E_OPB:
-      print_binary(buffer, e->op, e->ops);
-      break;
+      return print_binary(buffer, e->op, e->ops);
     case E_NEG:
-      print_expr (&o, e->ops->izq);
-      l = 6 + strlen(o);
+      l = 6 + print_expr(&o, e->ops->izq);
       s = (char*) malloc(l*sizeof(char));
       sprintf (s, TMPL_NEG, o);
       *buffer = s;
-      break;
+      return l;
     case E_VAL:
-      print_value(buffer, e->literal);
+      return print_value(buffer, e->literal);
   }
 }
 
-static void
+static size_t
 print_method (char** buffer, Metodo* m) {
-  return;
+  return 0;
+}
+
+static size_t
+print_list (char** buffer, List* l) {
+  return 0;
 }
