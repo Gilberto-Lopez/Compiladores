@@ -38,7 +38,7 @@ static char* const TMPL_CALL = "m[%s](%s)"; // 5+1
 static char* const TMPL_NEW = "obj[%s]"; // 5+1
 // Templates para clases
 static char* const TMPL_CLASS = "class %s:\n%s"; // 8+1
-static char* const TMPL_CLASS_S = "class(%s) %s:\n%s"; // 10+1
+static char* const TMPL_CLASS_S = "class %s(%s):\n%s"; // 10+1
 // Templates para features
 static char* const TMPL_METHOD = "%s(%s):%s{\n%s\nreturn %s\n}\n"; // 16+1
 static char* const TMPL_DEC = "%s:%s\n"; // 2+1

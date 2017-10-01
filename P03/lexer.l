@@ -32,10 +32,10 @@ simbolo [.,:;(){}=]
 "break"                       return BREAK;
 "default"                     return DEFAULT;
 "new"                         return NEW;
-"int"|"boolean"               { yylval.vstring = yytext;
+"int"|"boolean"               { yylval.vstring = strdup(yytext);
                                 return TYPE;
                               }
-[A-Z]({digito}|{letra}|"_")*  { yylval.vstring = yytext;
+[A-Z]({digito}|{letra}|"_")*  { yylval.vstring = strdup(yytext);
                                 return TYPE;
                               }
 "true"                        return TRUE_K;
@@ -44,10 +44,10 @@ simbolo [.,:;(){}=]
 {digito}+                     { yylval.vinteger = atoi(yytext);
                                 return INTEGER;
                               }
-"this"                        { yylval.vstring = yytext;
+"this"                        { yylval.vstring = strdup(yytext);
                                 return ID;
                               }
-({digito}|{letra}|"_")+       { yylval.vstring = yytext;
+({digito}|{letra}|"_")+       { yylval.vstring = strdup(yytext);
                                 return ID;
                               }
 {simbolo}                     return *yytext;
@@ -60,7 +60,7 @@ simbolo [.,:;(){}=]
                               }
 <string>(\\.|[^\\"\0\n])*     strcat(buffer,yytext);
 <string>\"                    { strcat(buffer,yytext);
-                                yylval.vstring = buffer;
+                                yylval.vstring = strdup(buffer);
                                 BEGIN(INITIAL);
                                 return STRING;
                               }
