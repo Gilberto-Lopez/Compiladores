@@ -20,7 +20,6 @@ static char* const TMPL_ID = "id[%s]"; // 4+1
 static char* const TMPL_IF = "if(%s,%s,%s)"; // 6+1
 static char* const TMPL_WHILE = "while(%s,%s)"; // 8+1
 static char* const TMPL_SWITCH = "switch(%s,%s,%s)"; // 10+1
-// SWITCH
 // CASE
 // Templates para operadores binarios y negación
 static char* const TMPL_ASGN = "asgn(%s,%s)"; // 7+1
@@ -247,20 +246,20 @@ print_value (char** buffer, Valor* v) {
       l = 8;
       break;
     case V_INT:
-      l = 6 + (v->val > 1 ? (size_t) ceil(log10(v->val)) : 1);
-      s = (char*) malloc(l*sizeof(char));
+      l = 5 + (v->val > 1 ? (size_t) ceil(log10(v->val)) : 1);
+      s = (char*) malloc(l*sizeof(char)+1);
       sprintf(s, TMPL_INT, v->val);
       *buffer = s;
       break;
     case V_ID:
-      l = 5 + strlen(v->cadena);
-      s = (char*) malloc(l*sizeof(char));
+      l = 4 + strlen(v->cadena);
+      s = (char*) malloc(l*sizeof(char)+1);
       sprintf(s, TMPL_ID, v->cadena);
       *buffer = s;
       break;
     case V_STRING:
-      l = 9 + strlen(v->cadena);
-      s = (char*) malloc(l*sizeof(char));
+      l = 8 + strlen(v->cadena);
+      s = (char*) malloc(l*sizeof(char)+1);
       sprintf(s, TMPL_STRING, v->cadena);
       *buffer = s;
       break;
@@ -280,24 +279,24 @@ print_construct (char** buffer, Construccion* c) {
   size_t l;
   switch (c->tipo) {
     case E_IF:
-      l = 7 + print_expr(&g, c->guardia) + print_list(&i, c->fst);
+      l = 6 + print_expr(&g, c->guardia) + print_list(&i, c->fst);
       if (c->snd != NULL)
         l += print_list(&d, c->snd);
       else
         l++;
-      s = (char*) malloc(l*sizeof(char));
+      s = (char*) malloc(l*sizeof(char)+1);
       sprintf(s, TMPL_IF, g, i,
         (c->snd != NULL)? d : "-");
       *buffer = s;
       break;
     case E_WHILE:
-      l = 9 + print_expr(&g, c->guardia) + print_list(&i, c->fst);
-      s = (char*) malloc(l*sizeof(char));
+      l = 8 + print_expr(&g, c->guardia) + print_list(&i, c->fst);
+      s = (char*) malloc(l*sizeof(char)+1);
       sprintf(s, TMPL_WHILE, g, i);
       *buffer = s;
       break;
     case E_SWITCH:
-      l = 11 + print_expr(&g, c->guardia);
+      l = 10 + print_expr(&g, c->guardia);
       if (c->fst->elementos > 0) {
         l += print_list(&i, c->fst);
       } else {
@@ -310,7 +309,7 @@ print_construct (char** buffer, Construccion* c) {
         l++;
         d = "-";
       }
-      s = (char*) malloc(l*sizeof(char));
+      s = (char*) malloc(l*sizeof(char)+1);
       sprintf(s, TMPL_SWITCH, g, i, d);
       *buffer = s;
       break;
@@ -336,38 +335,38 @@ print_binary (char** buffer, Op_Binario b, Operandos* o) {
   char* tmpl;
   switch (b) {
     case B_ASIGN:
-      l += 8;
+      l += 7;
       tmpl = TMPL_ASGN;
       break;
     case B_MAS:
-      l += 8;
+      l += 7;
       tmpl = TMPL_SUMA;
       break;
     case B_MENOS:
-      l += 7;
+      l += 6;
       tmpl = TMPL_SUB;
       break;
     case B_POR:
-      l += 8;
+      l += 7;
       tmpl = TMPL_PROD;
       break;
     case B_DIV:
-      l += 7;
+      l += 6;
       tmpl = TMPL_DIV;
       break;
     case B_LT:
-      l += 6;
+      l += 5;
       tmpl = TMPL_LT;
       break;
     case B_LE:
-      l += 6;
+      l += 5;
       tmpl = TMPL_LE;
       break;
     case B_EQ:
-      l += 6;
+      l += 5;
       tmpl = TMPL_EQ;
   }
-  s = (char*) malloc(l*sizeof(char));
+  s = (char*) malloc(l*sizeof(char)+1);
   sprintf(s, tmpl, i, d);
   *buffer = s;
   return l;
@@ -393,8 +392,8 @@ print_expr (char** buffer, Expr* e) {
     case E_OPB:
       return print_binary(buffer, e->op, e->ops);
     case E_NEG:
-      l = 6 + print_expr(&o, e->ops->izq);
-      s = (char*) malloc(l*sizeof(char));
+      l = 5 + print_expr(&o, e->ops->izq);
+      s = (char*) malloc(l*sizeof(char)+1);
       sprintf (s, TMPL_NEG, o);
       *buffer = s;
       return l;
