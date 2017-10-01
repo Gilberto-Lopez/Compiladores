@@ -36,6 +36,13 @@ static char* const TMPL_CALL_E = "%s.m[%s](%s)"; // 6+1
 static char* const TMPL_CALL_ES = "%s.SUPER.m[%s](%s)"; // 12+1
 static char* const TMPL_CALL = "m[%s](%s)"; // 5+1
 static char* const TMPL_NEW = "obj[%s]"; // 5+1
+// Templates para clases
+static char* const TMPL_CLASS = "class %s:\n%s"; // 8+1
+static char* const TMPL_CLASS_S = "class(%s) %s:\n%s"; // 10+1
+// Templates para features
+static char* const TMPL_METHOD = "%s(%s):%s{\n%s\nreturn %s\n}\n"; // 16+1
+static char* const TMPL_DEC = "%s:%s\n"; // 2+1
+static char* const TMPL_DASGN = "%s<-%s:%s\n"; // 4+1
 /* PROTOTIPOS */
 // Prototipos de los pretty printers auxiliares.
 static size_t print_value (char**, Valor*);
@@ -43,6 +50,9 @@ static size_t print_construct (char**, Construccion*);
 static size_t print_binary (char**, Op_Binario, Operandos*);
 static size_t print_expr (char**, Expr*);
 static size_t print_method (char**, Metodo*);
+static size_t print_class (char**, Class*);
+static size_t print_feature (char**, Feature*);
+static size_t print_formal (char**, Formal*);
 static size_t print_list (char**, List*);
 
 /* Crea un nuevo nodo con ELEMENTO. Guarda la referencia en NODO. Regresa 0 si
@@ -54,6 +64,8 @@ nuevo_nodo (Node** nodo, void* elemento) {
     return 1;
   n->elem = elemento;
   n->sig = NULL;
+  n->rep = NULL;
+  n->l_rep = 0;
   *nodo = n;
   return 0;
 }
@@ -435,12 +447,12 @@ print_method (char** buffer, Metodo* m) {
     } else {
       l += print_list (&a, m->args);
     }
-    if (m->expr == NULL) {
+    if (m->msg == NULL) {
       l += 5;
       s = (char*) malloc(l*sizeof(char)+1);
       sprintf(s, TMPL_CALL, m->nombre, a);
     } else {
-      l += print_expr(&e, m->expr);
+      l += print_expr(&e, m->msg);
       l += (m->super)? 12: 6;
       s = (char*) malloc(l*sizeof(char)+1);
       sprintf(s, (m->super)? TMPL_CALL_ES: TMPL_CALL_E, e, m->nombre, a);
@@ -450,7 +462,116 @@ print_method (char** buffer, Metodo* m) {
   return l;
 }
 
+/* Pretty printer para clases. Genera la representación de la clase C y la
+ * guarda en BUFFER. Regresa la longitud de la cadena guardada en BUFFER. */
+static size_t
+print_class (char** buffer, Class* c) {
+  char* s;
+  char* f;
+  size_t l = strlen(c->nombre) + print_list(&f, c->features);
+  if (c->super == NULL) {
+    l += 8;
+    s = (char*) malloc(l*sizeof(char)+1);
+    sprintf(s, TMPL_CLASS, c->nombre, f);
+  } else {
+    l += 10 + strlen(c->super) ;
+    s = (char*) malloc(l*sizeof(char)+1);
+    sprintf(s, TMPL_CLASS_S, c->nombre, c->super, f);
+  }
+  *buffer = s;
+  return l;
+}
+
+/* Pretty printer para miembros. Genera la representación del miembro F y la
+ * guarda en BUFFER. Regresa la longitud de la cadena guardada en BUFFER. */
+static size_t
+print_feature (char** buffer, Feature* f) {
+  size_t l = strlen(f->nombre_tipo) + strlen(f->id);
+  char* e;
+  char* body;
+  char* params;
+  char* s;
+  switch (f->tipo) {
+    case F_DEC:
+      l += 2;
+      s = (char*) malloc(l*sizeof(char)+1);
+      sprintf(s, TMPL_DEC, f->id, f->nombre_tipo);
+      break;
+    case F_DASGN:
+      l += 4 + print_expr(&e, f->asgnr);
+      s = (char*) malloc(l*sizeof(char)+1);
+      sprintf(s, TMPL_DASGN, f->id, e, f->nombre_tipo);
+      break;
+    case F_METHOD:
+      l += 16 + print_expr(&e, f->asgnr) + print_list(&body, f->body)
+      + print_list(&params, f->params);
+      s = (char*) malloc(l*sizeof(char)+1);
+      sprintf(s, TMPL_METHOD, f->id, params, f->nombre_tipo, body, e);
+  }
+  *buffer = s;
+  return l;
+}
+
+/* Pretty printer para parámetros formales. Genera la representación del
+ * parámetro F y la guarda en BUFFER. Regresa la longitud de la cadena guardada
+ * en BUFFER. */
+static size_t
+print_formal (char** buffer, Formal* f) {
+  size_t l = 1 + strlen(f->tipo) + strlen(f->id);
+  *buffer = (char*) malloc(l*sizeof(char)+1);
+  sprintf(*buffer, "%s:%s", f->id, f->tipo);
+  return l;
+}
+
+/* Pretty printer para listas. Genera la representación de la lista L y la
+ * guarda en BUFFER. Regresa la longitud de la cadena guardada en BUFFER. */
 static size_t
 print_list (char** buffer, List* l) {
-  return 0;
+  if (l->elementos == 0) {
+    *buffer = (char*) malloc(2*sizeof(char));
+    (*buffer)[0] = '-';
+    (*buffer)[1] = '\0';
+    return 2;
+  }
+  size_t len;
+  char* ts;
+  char* s;
+  Node* tmp = l->cabeza;
+  while (tmp != NULL) {
+    switch (l->tipo) {
+      case L_CLASE:
+        tmp->l_rep = print_class(& tmp->rep, (Class*) tmp->elem);
+        break;
+      case L_FEATURE:
+        tmp->l_rep = print_feature(& tmp->rep, (Feature*) tmp->elem);
+        break;
+      case L_FORMAL:
+        tmp->l_rep = print_formal(& tmp->rep, (Formal*) tmp->elem);
+        break;
+      case L_EXPR:
+      case L_EXPRC:
+        tmp->l_rep = print_expr(& tmp->rep, (Expr*) tmp->elem);
+        break;
+      case L_CASE:
+        tmp->l_rep = print_construct(& tmp->rep, (Construccion*) tmp->elem);
+    }
+    len += tmp->l_rep;
+    tmp = tmp->sig;
+  }
+  if (l->tipo == L_FORMAL || l->tipo == L_EXPRC)
+    ts = ",";
+  else if (l->tipo == L_FEATURE || l->tipo == L_EXPR || l->tipo == L_CASE)
+    ts = "\n";
+  else
+    ts = "\n\n";
+  len += (l->elementos -1)*strlen(ts);
+  s = (char*) malloc(len*sizeof(char)+1);
+  s[0] = '\0';
+  tmp = l->cabeza;
+  while(tmp->sig != NULL) {
+    strcat(s, tmp->rep);
+    strcat(s, ts);
+  }
+  strcat(s, tmp->rep);
+  return len;
 }

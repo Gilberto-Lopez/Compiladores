@@ -29,6 +29,8 @@ enum _type_list {
 struct _node {
   Node* sig;
   void* elem;
+  char* rep;
+  size_t l_rep;
 };
 
 // Listas
