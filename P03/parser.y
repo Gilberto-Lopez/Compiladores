@@ -11,12 +11,13 @@
 
   //extern int yyparse ();
   void yyerror (char*);
-  //char* asa;
-  
-  #include "asa.h"
-
+  // El árbol
+  char* asa;
   // Flag para listas evitar errores de la forma 'metodo(, ...,<>);'
   int empty;
+  
+  #include "asa.h"
+  Programa* programa;
 %}
 %start program
 %union{
@@ -46,8 +47,8 @@ program:
   class
     { Programa* p; new_program (&p);
       agrega (p->clases, $1);
+      programa = p;
       $$ = p;
-      //generar_arbol (&asa, p);
     }
   | program class
     { agrega ($1->clases, $2); }
@@ -94,9 +95,6 @@ formal_list:
   %empty
     { empty = 1;
       $$ = NULL;
-    /*List* l;
-      nueva_lista (&l, L_FORMAL);
-      $$ = l;*/
     }
   | formal
     { empty = 0;
@@ -259,9 +257,6 @@ exprc_list:
   %empty
     { empty = 1;
       $$ = NULL;
-    /*List* l;
-      nueva_lista (&l, L_EXPRC);
-      $$ = l;*/
     }
   | expr
     { empty = 0;
@@ -314,6 +309,8 @@ main (int argc, char* argv[]) {
   //yyout = fopen (argv[2],"w");
   yyparse ();
   fclose (yyin);
+  size_t len = genera_arbol(&asa, programa);
+  printf("%lu\n", len);
   //fwrite (asa, sizeof(char), strlen(asa), yyout);
   //fclose (yyout);
   return 0;

@@ -6,7 +6,7 @@
 
 /*
  * PRETTYPRINT
- * Generaión del árbol de sintaxis abstracta.
+ * Generación del árbol de sintaxis abstracta.
  */
 /* TEMPLATES */
 // Templates para valores.
@@ -244,9 +244,12 @@ new_expr (Expr** expresion, Type_Expr tipo, Op_Binario op, Operandos* ops,
   return 0;
 }
 
-void
+/* Genera el árbol de sintaxis abstracta del programa PROGRAMA generado por
+ * yyparse() y guarda la representación en BUFFER. Regresa la longitud de la
+ * representación. */
+size_t
 genera_arbol (char** buffer, Programa* programa) {
-  return;
+  return print_list(buffer, programa->clases);
 }
 
 /* Pretty printer para valores. Genera la representación de V y la guarda en
