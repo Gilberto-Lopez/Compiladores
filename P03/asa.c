@@ -574,6 +574,7 @@ print_list (char** buffer, List* l) {
   while(tmp->sig != NULL) {
     strcat(s, tmp->rep);
     strcat(s, ts);
+    tmp = tmp->sig;
   }
   strcat(s, tmp->rep);
   return len;

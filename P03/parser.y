@@ -306,12 +306,12 @@ yyerror (char* s) {
 int
 main (int argc, char* argv[]) {
   yyin = fopen (argv[1],"r");
-  //yyout = fopen (argv[2],"w");
   yyparse ();
   fclose (yyin);
   size_t len = genera_arbol(&asa, programa);
   printf("%lu\n", len);
-  //fwrite (asa, sizeof(char), strlen(asa), yyout);
+  //yyout = fopen (argv[2],"w");
+  //fwrite (asa, sizeof(char), len, yyout);
   //fclose (yyout);
   return 0;
 }
