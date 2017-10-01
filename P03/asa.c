@@ -20,7 +20,7 @@ static char* const TMPL_ID = "id[%s]"; // 4+1
 static char* const TMPL_IF = "if(%s,%s,%s)"; // 6+1
 static char* const TMPL_WHILE = "while(%s,%s)"; // 8+1
 static char* const TMPL_SWITCH = "switch(%s,%s,%s)"; // 10+1
-// CASE
+static char* const TMPL_CASE = "case(%s,%s)"; // 7+1
 // Templates para operadores binarios y negación
 static char* const TMPL_ASGN = "asgn(%s,%s)"; // 7+1
 static char* const TMPL_SUMA = "suma(%s,%s)"; // 7+1
@@ -31,6 +31,11 @@ static char* const TMPL_LT = "lt(%s,%s)"; // 5+1
 static char* const TMPL_LE = "le(%s,%s)"; // 5+1
 static char* const TMPL_EQ = "eq(%s,%s)"; // 5+1
 static char* const TMPL_NEG = "neg(%s)"; // 5+1
+// Templates para métodos/nuevas instancias
+static char* const TMPL_CALL_E = "%s.m[%s](%s)"; // 6+1
+static char* const TMPL_CALL_ES = "%s.SUPER.m[%s](%s)"; // 12+1
+static char* const TMPL_CALL = "m[%s](%s)"; // 5+1
+static char* const TMPL_NEW = "obj[%s]"; // 5+1
 /* PROTOTIPOS */
 // Prototipos de los pretty printers auxiliares.
 static size_t print_value (char**, Valor*);
@@ -180,11 +185,13 @@ new_construct (Construccion** construccion, Type_Expr tipo, Expr* guardia,
  * el método, NOMBRE el nombre de este. Para instanciación solo importa NOMBRE
  * pues la sintaxis es "new NOMBRE;". */
 int
-new_method (Metodo** metodo, char* nombre, int super, Expr* msg, List* args) {
+new_method (Metodo** metodo, char* nombre, int inst, int super, Expr* msg,
+  List* args) {
   Metodo* m = (Metodo*) malloc (sizeof (Metodo));
   if (m == NULL)
     return 1;
   m->nombre = nombre;
+  m->inst = inst;
   m->super = super;
   m->msg = msg;
   m->args = args;
@@ -270,6 +277,9 @@ print_value (char** buffer, Valor* v) {
   return l;
 }
 
+/* Pretty printer para construcciones. Genera la representación de la
+ * construcción C y la guarda en BUFFER. Regresa la longitud de la cadena
+ * guardada en BUFFER. */
 static size_t
 print_construct (char** buffer, Construccion* c) {
   char* g;
@@ -314,7 +324,10 @@ print_construct (char** buffer, Construccion* c) {
       *buffer = s;
       break;
     case E_CASE:
-      // Terminar
+      l = 7 + print_expr(&g, c->guardia) + print_list(&i, c->fst);
+      s = (char*) malloc(l*sizeof(char)+1);
+      sprintf(s, TMPL_CASE, g, i);
+      *buffer = s;
       break;
     default:
       // Este caso no ocurre
@@ -402,9 +415,39 @@ print_expr (char** buffer, Expr* e) {
   }
 }
 
+/* Pretty printer para métodos. Genera la representación de la aplicación del
+ * método M o una instanciación y la guarda en BUFFER. Regresa la longitud de
+ * la cadena guardada en BUFFER. */
 static size_t
 print_method (char** buffer, Metodo* m) {
-  return 0;
+  size_t l = strlen(m->nombre);
+  char* a;
+  char* e;
+  char* s;
+  if (m->inst) {
+    l += 5;
+    s = (char*) malloc(l*sizeof(char)+1);
+    sprintf(s, TMPL_NEW, m->nombre);
+  } else {
+    if (m->args == NULL) {
+      a = "-";
+      l++;
+    } else {
+      l += print_list (&a, m->args);
+    }
+    if (m->expr == NULL) {
+      l += 5;
+      s = (char*) malloc(l*sizeof(char)+1);
+      sprintf(s, TMPL_CALL, m->nombre, a);
+    } else {
+      l += print_expr(&e, m->expr);
+      l += (m->super)? 12: 6;
+      s = (char*) malloc(l*sizeof(char)+1);
+      sprintf(s, (m->super)? TMPL_CALL_ES: TMPL_CALL_E, e, m->nombre, a);
+    }
+  }
+  *buffer = s;
+  return l;
 }
 
 static size_t

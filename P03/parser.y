@@ -139,17 +139,17 @@ expr:
       $$ = e;
     }
   | expr '.' ID '(' exprc_list ')'
-    { Metodo* m; new_method (&m, $3, 0, $1, $5);
+    { Metodo* m; new_method (&m, $3, 0, 0, $1, $5);
       Expr* e; new_expr (&e, E_APP, 0, NULL, NULL, m, NULL);
       $$ = e;
     }
   | expr '.' SUPER '.' ID '(' exprc_list ')'
-    { Metodo* m; new_method (&m, $5, 1, $1, $7);
+    { Metodo* m; new_method (&m, $5, 0, 1, $1, $7);
       Expr* e; new_expr (&e, E_APP, 0, NULL, NULL, m, NULL);
       $$ = e;
     }
   | ID '(' exprc_list ')'
-    { Metodo* m; new_method (&m, $1, 0, NULL, $3);
+    { Metodo* m; new_method (&m, $1, 0, 0, NULL, $3);
       Expr* e; new_expr (&e, E_APP, 0, NULL, NULL, m, NULL);
       $$ = e;
     }
@@ -176,7 +176,7 @@ expr:
       $$ = e;
     }
   | NEW TYPE
-    { Metodo* m; new_method (&m, $2, 0, NULL, NULL);
+    { Metodo* m; new_method (&m, $2, 1, 0, NULL, NULL);
       Expr* e; new_expr (&e, E_INST, 0, NULL, NULL, m, NULL);
       $$ = e;
     }
