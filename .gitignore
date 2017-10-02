@@ -17,5 +17,8 @@
 **/*.tab.*
 **/*.output
 
+# Codigo objeto
+**/*.o
+
 # Código LOOLI
 **/*.lol
