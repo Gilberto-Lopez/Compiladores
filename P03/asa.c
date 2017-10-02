@@ -536,7 +536,7 @@ print_list (char** buffer, List* l) {
     (*buffer)[1] = '\0';
     return 2;
   }
-  size_t len;
+  size_t len = 0;
   char* ts;
   char* s;
   Node* tmp = l->cabeza;
@@ -577,5 +577,6 @@ print_list (char** buffer, List* l) {
     tmp = tmp->sig;
   }
   strcat(s, tmp->rep);
+  *buffer = s;
   return len;
 }

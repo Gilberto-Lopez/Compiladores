@@ -6,7 +6,7 @@
   extern int yylex ();
   extern char* yytext;
   extern FILE* yyin;
-  //extern FILE* yyout;
+  extern FILE* yyout;
   extern int yylineno;
 
   //extern int yyparse ();
@@ -15,6 +15,8 @@
   char* asa;
   // Flag para listas evitar errores de la forma 'metodo(, ...,<>);'
   int empty;
+  // Flag para errores
+  int errores = 0;
   
   #include "asa.h"
   Programa* programa;
@@ -298,6 +300,7 @@ default_clause:
 /* Imprime mensajes de error por yyparse (). */
 void
 yyerror (char* s) {
+  errores++;
   fprintf(stderr, "*** Error sintáctico en línea %d: '%s'\n\t%s\n",
     yylineno, yytext,s);
   //exit(1);
@@ -308,10 +311,13 @@ main (int argc, char* argv[]) {
   yyin = fopen (argv[1],"r");
   yyparse ();
   fclose (yyin);
-  size_t len = genera_arbol(&asa, programa);
-  printf("%lu\n", len);
-  //yyout = fopen (argv[2],"w");
-  //fwrite (asa, sizeof(char), len, yyout);
-  //fclose (yyout);
+  if (errores) {
+    printf("El programa contiene %d errores.", errores);
+  } else {
+    size_t len = genera_arbol(&asa, programa);
+    yyout = fopen (argv[2],"w");
+    fwrite (asa, sizeof(char), len, yyout);
+    fclose (yyout);
+  }
   return 0;
 }
