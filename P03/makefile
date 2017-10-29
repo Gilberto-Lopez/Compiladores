@@ -22,4 +22,7 @@ debug: asa.o parser.tab.o lex.yy.o
 	gcc -g -o parser_gdb asa.o parser.tab.o lex.yy.o -lfl -lm
 
 clean:
-	rm parser{,.output,.tab*,_gdb} lex.yy.c core* *.o
+	rm parser{,.output,.tab*} lex.yy.c
+
+clean-debug:
+	rm parser{_gdb,.output,.tab.{c,h}} lex.yy.c *.o
