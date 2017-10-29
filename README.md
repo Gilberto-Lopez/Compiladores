@@ -9,6 +9,7 @@ Laboratorio de compiladores
   1. Sistema de procesamiento de Lenguaje.
   2. Flex.
   3. Yacc.
+  4. Tabla de símbolos.
 
 * Tareas/
   + automata.c : Autómata que reconoce ID, enteros y flotantes.
