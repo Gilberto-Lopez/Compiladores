@@ -65,12 +65,12 @@ program:
 class:
   CLASS TYPE '{'      { top = new_env (NULL); }
   feature_list '}'
-    { Class* c; new_class (&c, $2, NULL, $4);
+    { Class* c; new_class (&c, $2, NULL, $5);
       $$ = c;
     }
   | CLASS TYPE INHERITS TYPE '{'      { top = new_env (NULL); }
     feature_list '}'
-    { Class* c; new_class (&c, $2, $4, $6);
+    { Class* c; new_class (&c, $2, $4, $7);
       $$ = c;
     }
   ;
@@ -90,7 +90,7 @@ feature:
                       top = new_env (top);
                     }
   formal_list ')' '{' expr_list RETURN expr ';' '}'
-    { Feature* f; new_feature (&f, F_METHOD, $1, $2, $9, $4, $7);
+    { Feature* f; new_feature (&f, F_METHOD, $1, $2, $10, $5, $8);
       $$ = f;
       top = saved;
     }
@@ -150,7 +150,7 @@ expr:
   '=' expr
     { Valor* v; new_value (&v, V_ID, 0, $1);
       Expr* e_; new_expr (&e_, E_VAL, 0, NULL, NULL, NULL, v);
-      Operandos* o; new_operands (&o, e_, $3);
+      Operandos* o; new_operands (&o, e_, $4);
       Expr* e; new_expr (&e, E_OPB, B_ASIGN, o, NULL, NULL, NULL);
       $$ = e;
     }
@@ -188,7 +188,7 @@ expr:
     ')' '{' case_list default_clause '}'
     { Valor* v; new_value (&v, V_ID, 0, $3);
       Expr* e_; new_expr (&e_, E_VAL, 0, NULL, NULL, NULL, v);
-      Construccion* c; new_construct (&c, E_SWITCH, e_, $6, $7);
+      Construccion* c; new_construct (&c, E_SWITCH, e_, $7, $8);
       Expr* e; new_expr (&e, E_SWITCH, 0, NULL, c, NULL, NULL);
       $$ = e;
     }
