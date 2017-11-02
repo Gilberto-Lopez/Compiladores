@@ -22,6 +22,10 @@
   Programa* programa;
 
   #include "tablasim.h"
+  // Tabla de símbolos jerárquica: Stack de ambientes.
+  Env* top = NULL;
+  Env* saved = NULL;
+  void sim_error (char*);
 %}
 %start program
 %union{
@@ -59,11 +63,13 @@ program:
   ;
 
 class:
-  CLASS TYPE '{' feature_list '}'
+  CLASS TYPE '{'      { top = new_env (NULL); }
+  feature_list '}'
     { Class* c; new_class (&c, $2, NULL, $4);
       $$ = c;
     }
-  | CLASS TYPE INHERITS TYPE '{' feature_list '}'
+  | CLASS TYPE INHERITS TYPE '{'      { top = new_env (NULL); }
+    feature_list '}'
     { Class* c; new_class (&c, $2, $4, $6);
       $$ = c;
     }
@@ -80,17 +86,23 @@ feature_list:
   ;
 
 feature:
-  TYPE ID '(' formal_list ')' '{' expr_list RETURN expr ';' '}'
+  TYPE ID '('       { saved = top;
+                      top = new_env (top);
+                    }
+  formal_list ')' '{' expr_list RETURN expr ';' '}'
     { Feature* f; new_feature (&f, F_METHOD, $1, $2, $9, $4, $7);
       $$ = f;
+      top = saved;
     }
   | TYPE ID ';'
     { Feature* f; new_feature (&f, F_DEC, $1, $2, NULL, NULL, NULL);
       $$ = f;
+      install (top, $2, new_sym ($2,$1));
     }
   | TYPE ID '=' expr ';'
     { Feature* f; new_feature (&f, F_DASGN, $1, $2, $4, NULL, NULL);
       $$ = f; 
+      install (top, $2, new_sym ($2,$1));
     }
   ;
 
@@ -129,11 +141,13 @@ formal:
   TYPE ID
     { Formal* f; new_formal (&f, $1, $2);
       $$ = f;
+      install(top, $2, new_sym ($2,$1));
     }
   ;
 
 expr:
-  ID '=' expr
+  ID      { if (context_check (top, $1) == NULL) sim_error ($1); }
+  '=' expr
     { Valor* v; new_value (&v, V_ID, 0, $1);
       Expr* e_; new_expr (&e_, E_VAL, 0, NULL, NULL, NULL, v);
       Operandos* o; new_operands (&o, e_, $3);
@@ -170,7 +184,8 @@ expr:
       Expr* e; new_expr (&e, E_WHILE, 0, NULL, c, NULL, NULL);
       $$ = e;
     }
-  | SWITCH '(' ID ')' '{' case_list default_clause '}'
+  | SWITCH '(' ID       { if (context_check (top, $3) == NULL) sim_error ($3); }
+    ')' '{' case_list default_clause '}'
     { Valor* v; new_value (&v, V_ID, 0, $3);
       Expr* e_; new_expr (&e_, E_VAL, 0, NULL, NULL, NULL, v);
       Construccion* c; new_construct (&c, E_SWITCH, e_, $6, $7);
@@ -225,7 +240,8 @@ expr:
   | '(' expr ')'
     { $$ = $2; }
   | ID
-    { Valor* v; new_value (&v, V_ID, 0, $1);
+    { if (context_check (top, $1) == NULL) sim_error ($1);
+      Valor* v; new_value (&v, V_ID, 0, $1);
       Expr* e; new_expr (&e, E_VAL, 0, NULL, NULL, NULL, v);
       $$ = e;
     }
@@ -306,6 +322,14 @@ yyerror (char* s) {
   fprintf(stderr, "*** Error sintáctico en línea %d: '%s'\n\t%s\n",
     yylineno, yytext,s);
   //exit(1);
+}
+
+/* Imprime un mensaje de error por la tabla de símbolos. */
+void
+sim_error (char* s) {
+  errores++;
+  fprintf(stderr, "*** Error en línea %d: 'Variable %s no declarada.'\n",
+    yylineno, s);
 }
 
 int
