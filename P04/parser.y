@@ -63,12 +63,16 @@ program:
   ;
 
 class:
-  CLASS TYPE '{'      { top = new_env (NULL); }
+  CLASS TYPE '{'      { top = new_env (NULL);
+                        install (top, "this", new_sym ("this",$2));
+                      }
   feature_list '}'
     { Class* c; new_class (&c, $2, NULL, $5);
       $$ = c;
     }
-  | CLASS TYPE INHERITS TYPE '{'      { top = new_env (NULL); }
+  | CLASS TYPE INHERITS TYPE '{'      { top = new_env (NULL);
+                                        install (top, "this", new_sym ("this",$2));
+                                      }
     feature_list '}'
     { Class* c; new_class (&c, $2, $4, $7);
       $$ = c;
@@ -86,7 +90,12 @@ feature_list:
   ;
 
 feature:
-  TYPE ID '('       { saved = top;
+  TYPE ID '('       { if (context_check (top, $2, 0) != NULL) {
+                        sim_error ($2,1);
+                      } else {
+                        install (top, $2, new_sym ($2,$1));
+                      }
+                      saved = top;
                       top = new_env (top);
                     }
   formal_list ')' '{' expr_list RETURN expr ';' '}'
@@ -163,17 +172,20 @@ expr:
       $$ = e;
     }
   | expr '.' ID '(' exprc_list ')'
-    { Metodo* m; new_method (&m, $3, 0, 0, $1, $5);
+    { if (context_check (top, $3, 1) == NULL) sim_error ($3,0);
+      Metodo* m; new_method (&m, $3, 0, 0, $1, $5);
       Expr* e; new_expr (&e, E_APP, 0, NULL, NULL, m, NULL);
       $$ = e;
     }
   | expr '.' SUPER '.' ID '(' exprc_list ')'
-    { Metodo* m; new_method (&m, $5, 0, 1, $1, $7);
+    { if (context_check (top, $5, 1) == NULL) sim_error ($5,0);
+      Metodo* m; new_method (&m, $5, 0, 1, $1, $7);
       Expr* e; new_expr (&e, E_APP, 0, NULL, NULL, m, NULL);
       $$ = e;
     }
   | ID '(' exprc_list ')'
-    { Metodo* m; new_method (&m, $1, 0, 0, NULL, $3);
+    { if (context_check (top, $1, 1) == NULL) sim_error ($1,0);
+      Metodo* m; new_method (&m, $1, 0, 0, NULL, $3);
       Expr* e; new_expr (&e, E_APP, 0, NULL, NULL, m, NULL);
       $$ = e;
     }
