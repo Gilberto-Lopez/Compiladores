@@ -43,12 +43,15 @@ install (Env* e, char* key, Sym* val) {
   Insert (e->tabla, key, val);
 }
 
-/* Busca la variable con llave KEY en el ambiente E. */
+/* Busca la variable con llave KEY en el ambiente E. Si R es 0 no busca en los
+ * ambientes padres. */
 Sym*
-context_check (Env* e, char* key) {
-  Env* tmp = e;
-  for (; tmp != NULL; tmp = tmp->prev) {
-    Sym* s = Search (e->tabla,key);
+context_check (Env* e, char* key, int r) {
+  Env* tmp;
+  if (!r)
+    return Search (e->tabla,key);
+  for (tmp = e; tmp != NULL; tmp = tmp->prev) {
+    Sym* s = Search (tmp->tabla,key);
     if (s != NULL)
       return s;
   }
