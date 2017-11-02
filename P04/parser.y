@@ -25,7 +25,7 @@
   // Tabla de símbolos jerárquica: Stack de ambientes.
   Env* top = NULL;
   Env* saved = NULL;
-  void sim_error (char*);
+  void sim_error (char*, int);
 %}
 %start program
 %union{
@@ -97,12 +97,20 @@ feature:
   | TYPE ID ';'
     { Feature* f; new_feature (&f, F_DEC, $1, $2, NULL, NULL, NULL);
       $$ = f;
-      install (top, $2, new_sym ($2,$1));
+      if (context_check (top, $2) != NULL) {
+        sim_error ($2,1);
+      } else {
+        install (top, $2, new_sym ($2,$1));
+      }
     }
   | TYPE ID '=' expr ';'
     { Feature* f; new_feature (&f, F_DASGN, $1, $2, $4, NULL, NULL);
-      $$ = f; 
-      install (top, $2, new_sym ($2,$1));
+      $$ = f;
+      if (context_check (top, $2) != NULL) {
+        sim_error ($2,1);
+      } else {
+        install (top, $2, new_sym ($2,$1));
+      }
     }
   ;
 
@@ -146,7 +154,7 @@ formal:
   ;
 
 expr:
-  ID      { if (context_check (top, $1) == NULL) sim_error ($1); }
+  ID      { if (context_check (top, $1) == NULL) sim_error ($1,0); }
   '=' expr
     { Valor* v; new_value (&v, V_ID, 0, $1);
       Expr* e_; new_expr (&e_, E_VAL, 0, NULL, NULL, NULL, v);
@@ -184,7 +192,7 @@ expr:
       Expr* e; new_expr (&e, E_WHILE, 0, NULL, c, NULL, NULL);
       $$ = e;
     }
-  | SWITCH '(' ID       { if (context_check (top, $3) == NULL) sim_error ($3); }
+  | SWITCH '(' ID       { if (context_check (top, $3) == NULL) sim_error ($3,0); }
     ')' '{' case_list default_clause '}'
     { Valor* v; new_value (&v, V_ID, 0, $3);
       Expr* e_; new_expr (&e_, E_VAL, 0, NULL, NULL, NULL, v);
@@ -240,7 +248,7 @@ expr:
   | '(' expr ')'
     { $$ = $2; }
   | ID
-    { if (context_check (top, $1) == NULL) sim_error ($1);
+    { if (context_check (top, $1) == NULL) sim_error ($1,0);
       Valor* v; new_value (&v, V_ID, 0, $1);
       Expr* e; new_expr (&e, E_VAL, 0, NULL, NULL, NULL, v);
       $$ = e;
@@ -326,10 +334,10 @@ yyerror (char* s) {
 
 /* Imprime un mensaje de error por la tabla de símbolos. */
 void
-sim_error (char* s) {
+sim_error (char* s, int f) {
   errores++;
-  fprintf(stderr, "*** Error en línea %d: 'Variable %s no declarada.'\n",
-    yylineno, s);
+  fprintf(stderr, "*** Error en línea %d: Variable '%s' %s declarada\n",
+    yylineno, s, f?"ya":"no");
 }
 
 int
@@ -342,7 +350,7 @@ main (int argc, char* argv[]) {
   yyparse ();
   fclose (yyin);
   if (errores) {
-    printf("El programa contiene %d errores.", errores);
+    printf("El programa contiene %d errores.\n", errores);
   } else {
     size_t len = genera_arbol(&asa, programa);
     yyout = fopen (argv[2],"w");
