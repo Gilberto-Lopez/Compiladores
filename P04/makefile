@@ -1,12 +1,12 @@
 all: parser
 
-parser.tab.c parser.tab.h: parser.y asa.h tablasim.h
+parser.tab.c parser.tab.h: parser.y
 	bison -vd parser.y
 
-lex.yy.c: lexer.l parser.tab.h asa.h
+lex.yy.c: lexer.l
 	flex lexer.l
 
-parser: lex.yy.c parser.tab.c parser.tab.h asa.c asa.h tablasim.c tablasim.h dict.c dict.h
+parser: lex.yy.c parser.tab.c parser.tab.h
 	gcc parser.tab.c lex.yy.c asa.c tablasim.c dict.c -lfl -lm -o parser
 
 asa.o: asa.c asa.h
@@ -25,7 +25,7 @@ dict.o: dict.c dict.h
 	gcc -g -c dict.c
 
 debug: asa.o parser.tab.o lex.yy.o tablasim.o dict.o
-	gcc -g -o parser_gdb asa.o parser.tab.o lex.yy.o -lfl -lm
+	gcc -g -o parser_gdb asa.o parser.tab.o lex.yy.o dict.o tablasim.o -lfl -lm
 
 clean:
 	rm parser{,.output,.tab*} lex.yy.c
