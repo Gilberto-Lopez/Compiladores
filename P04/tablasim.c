@@ -47,8 +47,8 @@ install (Env* e, char* key, Sym* val) {
 Sym*
 context_check (Env* e, char* key) {
   Env* tmp = e;
-  for (; tmp != NULL, tmp = tmp->prev) {
-    Sym* s = Search (e,key);
+  for (; tmp != NULL; tmp = tmp->prev) {
+    Sym* s = Search (e->tabla,key);
     if (s != NULL)
       return s;
   }
