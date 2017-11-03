@@ -52,7 +52,7 @@ new_psym (char* id, Env* env, int l) {
   PSym* s = (PSym*) malloc (sizeof(PSym));
   assert (s != NULL);
   s->id = id;
-  s->env = e
+  s->env = env;
   s->l = l;
   return s;
 }
