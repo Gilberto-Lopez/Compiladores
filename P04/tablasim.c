@@ -16,6 +16,7 @@ struct _env {
 struct _sym {
   char* tipo;   // Tipo de la variable
   char* id;     // Identificador de la variable
+  Env* env;     // Alcance de la variable
 };
 
 /* Crea una nueva tabla de símbolos en la referencia ENV con tabla padre P. */
@@ -38,10 +39,11 @@ new_sym (char* id, char* tipo) {
   return s;
 }
 
-/* Agrega el par KEY,VAL al ambiente E. */
+/* Agrega VAL al ambiente E. La llave de VAL es su id. */
 void
-install (Env* e, char* key, Sym* val) {
-  Insert (e->tabla, key, val);
+install (Env* e, Sym* val) {
+  Insert (e->tabla, val->id, val);
+  val->env = e;
 }
 
 /* Busca la variable con llave KEY en el ambiente E. Si R es 0 no busca en los
