@@ -9,7 +9,6 @@
   extern FILE* yyout;
   extern int yylineno;
 
-  //extern int yyparse ();
   void yyerror (char*);
   // El árbol
   char* asa;
@@ -21,11 +20,22 @@
   #include "asa.h"
   Programa* programa;
 
+  /* P04 */
   #include "tablasim.h"
   // Tabla de símbolos jerárquica: Stack de ambientes.
   Env* top = NULL;
   Env* saved = NULL;
+  // Macro para agregar un nuevo símbolo con id I y tipo T al ambiente top
+  #define INSTALL(I,T) (install(top,new_sym(I,T)))
+  // Macros para context_check, buscan en el ambiente top el símbolo ID:
+  // C -> Current: solo busca en top
+  // R -> Recursive: busca en top y en los ambientes padre
+  #define CONTEXT_CHECK_C(ID) (context_check(top,ID,0))
+  #define CONTEXT_CHECK_R(ID) (context_check(top,ID,1))
   void sim_error (char*, int);
+
+  // Lista de símbolos pendientes por revisar
+  List* pendientes;
 %}
 %start program
 %union{
@@ -63,15 +73,19 @@ program:
   ;
 
 class:
-  CLASS TYPE '{'      { top = new_env (NULL);
-                        install (top, "this", new_sym ("this",$2));
+  CLASS TYPE '{'      { /* P04 */
+                        // Tabla de símbolos para la clase
+                        top = new_env (NULL);
+                        // Agregamos el identificador this
+                        INSTALL ("this",$2);
                       }
   feature_list '}'
     { Class* c; new_class (&c, $2, NULL, $5);
       $$ = c;
     }
-  | CLASS TYPE INHERITS TYPE '{'      { top = new_env (NULL);
-                                        install (top, "this", new_sym ("this",$2));
+  | CLASS TYPE INHERITS TYPE '{'      { /* P04 */
+                                        top = new_env (NULL);
+                                        INSTALL ("this",$2);
                                       }
     feature_list '}'
     { Class* c; new_class (&c, $2, $4, $7);
@@ -90,36 +104,43 @@ feature_list:
   ;
 
 feature:
-  TYPE ID '('       { if (context_check (top, $2, 0) != NULL) {
+  TYPE ID '('       { /* P04 */
+                      // Si el símbolo ya existe en el ambiente actual mandamos
+                      // error, caso contrario lo agregamos
+                      // El tipo es el tipo de regreso del método
+                      if (CONTEXT_CHECK_C ($2) != NULL)
                         sim_error ($2,1);
-                      } else {
-                        install (top, $2, new_sym ($2,$1));
-                      }
+                      else
+                        INSTALL ($2,$1);
+                      // Creamos una nueva tabla de símbolos para este bloque
                       saved = top;
                       top = new_env (top);
                     }
   formal_list ')' '{' expr_list RETURN expr ';' '}'
     { Feature* f; new_feature (&f, F_METHOD, $1, $2, $10, $5, $8);
       $$ = f;
+      /* P04 */
+      // Regresamos a la tabla de símbolos anterior
       top = saved;
     }
   | TYPE ID ';'
     { Feature* f; new_feature (&f, F_DEC, $1, $2, NULL, NULL, NULL);
       $$ = f;
-      if (context_check (top, $2, 0) != NULL) {
+      /* P04 */
+      if (CONTEXT_CHECK_C ($2) != NULL)
         sim_error ($2,1);
-      } else {
-        install (top, $2, new_sym ($2,$1));
-      }
+      else
+        INSTALL ($2,$1);
     }
-  | TYPE ID '=' expr ';'
-    { Feature* f; new_feature (&f, F_DASGN, $1, $2, $4, NULL, NULL);
+  | TYPE ID       { /* P04 */
+                    if (CONTEXT_CHECK_C ($2) != NULL)
+                      sim_error ($2,1);
+                    else
+                      INSTALL ($2,$1);
+                  }
+    '=' expr ';'
+    { Feature* f; new_feature (&f, F_DASGN, $1, $2, $5, NULL, NULL);
       $$ = f;
-      if (context_check (top, $2, 0) != NULL) {
-        sim_error ($2,1);
-      } else {
-        install (top, $2, new_sym ($2,$1));
-      }
     }
   ;
 
@@ -158,12 +179,21 @@ formal:
   TYPE ID
     { Formal* f; new_formal (&f, $1, $2);
       $$ = f;
-      install(top, $2, new_sym ($2,$1));
+      /* P04 */
+      if (CONTEXT_CHECK_C ($2) != NULL)
+        sim_error ($2,1);
+      else
+        INSTALL ($2,$1);
     }
   ;
 
 expr:
-  ID      { if (context_check (top, $1, 1) == NULL) sim_error ($1,0); }
+  ID      { /* P04 */
+            // Si el símbolo no existe (hasta este punto) lo guardamos como
+            // pendiente para revisarlo más tarde.
+            if (CONTEXT_CHECK_R ($1) == NULL)
+              agrega (pendientes, new_psym ($1, top, yylineno));
+          }
   '=' expr
     { Valor* v; new_value (&v, V_ID, 0, $1);
       Expr* e_; new_expr (&e_, E_VAL, 0, NULL, NULL, NULL, v);
@@ -171,21 +201,30 @@ expr:
       Expr* e; new_expr (&e, E_OPB, B_ASIGN, o, NULL, NULL, NULL);
       $$ = e;
     }
-  | expr '.' ID '(' exprc_list ')'
-    { if (context_check (top, $3, 1) == NULL) sim_error ($3,0);
-      Metodo* m; new_method (&m, $3, 0, 0, $1, $5);
+  | expr '.' ID       { /* P04 */
+                        if (CONTEXT_CHECK_R ($3) == NULL)
+                          agrega (pendientes, new_psym ($3, top, yylineno));
+                      }
+    '(' exprc_list ')'
+    { Metodo* m; new_method (&m, $3, 0, 0, $1, $6);
       Expr* e; new_expr (&e, E_APP, 0, NULL, NULL, m, NULL);
       $$ = e;
     }
-  | expr '.' SUPER '.' ID '(' exprc_list ')'
-    { if (context_check (top, $5, 1) == NULL) sim_error ($5,0);
-      Metodo* m; new_method (&m, $5, 0, 1, $1, $7);
+  | expr '.' SUPER '.' ID       { /* P04 */
+                                  if (CONTEXT_CHECK_R ($5) == NULL)
+                                    agrega (pendientes, new_psym ($5, top, yylineno));
+                                }
+    '(' exprc_list ')'
+    { Metodo* m; new_method (&m, $5, 0, 1, $1, $8);
       Expr* e; new_expr (&e, E_APP, 0, NULL, NULL, m, NULL);
       $$ = e;
     }
-  | ID '(' exprc_list ')'
-    { if (context_check (top, $1, 1) == NULL) sim_error ($1,0);
-      Metodo* m; new_method (&m, $1, 0, 0, NULL, $3);
+  | ID      { /* P04 */
+              if (CONTEXT_CHECK_R ($1) == NULL)
+                agrega (pendientes, new_psym ($1, top, yylineno));
+            }
+    '(' exprc_list ')'
+    { Metodo* m; new_method (&m, $1, 0, 0, NULL, $4);
       Expr* e; new_expr (&e, E_APP, 0, NULL, NULL, m, NULL);
       $$ = e;
     }
@@ -204,7 +243,10 @@ expr:
       Expr* e; new_expr (&e, E_WHILE, 0, NULL, c, NULL, NULL);
       $$ = e;
     }
-  | SWITCH '(' ID       { if (context_check (top, $3, 1) == NULL) sim_error ($3,0); }
+  | SWITCH '(' ID       { /* P04 */
+                          if (CONTEXT_CHECK_R ($3) == NULL)
+                            agrega (pendientes, new_psym ($3, top, yylineno));
+                        }
     ')' '{' case_list default_clause '}'
     { Valor* v; new_value (&v, V_ID, 0, $3);
       Expr* e_; new_expr (&e_, E_VAL, 0, NULL, NULL, NULL, v);
@@ -260,7 +302,9 @@ expr:
   | '(' expr ')'
     { $$ = $2; }
   | ID
-    { if (context_check (top, $1, 1) == NULL) sim_error ($1,0);
+    { /* P04 */
+      if (CONTEXT_CHECK_R ($1) == NULL)
+        agrega (pendientes, new_psym ($1, top, yylineno));
       Valor* v; new_value (&v, V_ID, 0, $1);
       Expr* e; new_expr (&e, E_VAL, 0, NULL, NULL, NULL, v);
       $$ = e;
@@ -341,7 +385,6 @@ yyerror (char* s) {
   errores++;
   fprintf(stderr, "*** Error sintáctico en línea %d: '%s'\n\t%s\n",
     yylineno, yytext,s);
-  //exit(1);
 }
 
 /* Imprime un mensaje de error por la tabla de símbolos. */
@@ -359,6 +402,8 @@ main (int argc, char* argv[]) {
     return 1;
   }
   yyin = fopen (argv[1],"r");
+  // Inicializamos la lista de símbolos pendientes
+  nueva_lista (&pendientes, 0);
   yyparse ();
   fclose (yyin);
   if (errores) {
