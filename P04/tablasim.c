@@ -19,6 +19,12 @@ struct _sym {
   Env* env;     // Alcance de la variable
 };
 
+struct _psym {
+  char* id;     // Identificador de la variable
+  Env* env;     // Alcance de la variable
+  int l;        // Línea donde aparece la variable
+};
+
 /* Crea una nueva tabla de símbolos en la referencia ENV con tabla padre P. */
 Env*
 new_env (Env* p) {
@@ -36,6 +42,18 @@ new_sym (char* id, char* tipo) {
   assert (s != NULL);
   s->tipo = tipo;
   s->id = id;
+  return s;
+}
+
+/* Crea un nuevo símbolo pendiente de revisar con identificador ID, alcance ENV
+ * y aparece en la línea L del código. */
+PSym*
+new_psym (char* id, Env* env, int l) {
+  PSym* s = (PSym*) malloc (sizeof(PSym));
+  assert (s != NULL);
+  s->id = id;
+  s->env = e
+  s->l = l;
   return s;
 }
 
