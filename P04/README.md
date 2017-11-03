@@ -14,3 +14,43 @@ Código:
 * dict.c
 
 Código fuente [aquí](http://www.cs.yale.edu/homes/aspnes/pinewiki/C(2f)HashTables.html?highlight=%28CategoryAlgorithmNotes%29 "C/HashTables").
+
+## Ejecución
+
+### Compilación
+
+Para compilar ejecute el siguiente comando en consola:
+
+```bash
+make
+```
+
+### Ejecución
+
+Para ejecutar ejecute el siguiente comando en consola:
+
+```bash
+./parser codigo.lol salida.txt
+```
+
+### Limpieza
+
+Para eliminar los archivos creados ejecute el siguiente comando en consola:
+
+```bash
+make clean
+```
+
+### Debug
+
+Para generar el ejecutable para debuggeo con GDB ejecute el siguiente comando en consola:
+
+```bash
+make debug
+```
+
+Para eliminar los archivos creados ejecute el siguiente comando en consola:
+
+```bash
+make clean-debug
+```

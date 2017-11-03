@@ -1,5 +1,3 @@
-#include "dict.h"
-
 typedef struct _env Env;
 typedef struct _sym Sym;
 

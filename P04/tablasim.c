@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <assert.h>
+#include "dict.h"
 #include "tablasim.h"
 
 #define Insert(D,K,V) (DictInsert(D,K,(void*)V))
