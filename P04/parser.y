@@ -395,6 +395,23 @@ sim_error (char* s, int f) {
     yylineno, s, f?"ya":"no");
 }
 
+/* Revisamos los símbolos que hayan quedado pendientes de revisar en la lista
+ * pendientes. */
+void
+pendientes_check (void) {
+  Node* tmp;
+  for (tmp = pendientes->cabeza; tmp != NULL; tmp = tmp->sig) {
+    PSym* ps = (PSym*) tmp->elem;
+    char* id = get_id (ps);
+    int l = get_line (ps);
+    Env* env = get_env (ps);
+    if (context_check (env, id, 1) == NULL) {
+      yylineno = l;
+      sim_error (id, 0);
+    }
+  }
+}
+
 int
 main (int argc, char* argv[]) {
   if (argc < 3) {
@@ -406,6 +423,8 @@ main (int argc, char* argv[]) {
   nueva_lista (&pendientes, 0);
   yyparse ();
   fclose (yyin);
+  // Revisamos los símbolos que quedaron pendientes
+  pendientes_check ();
   if (errores) {
     printf("El programa contiene %d errores.\n", errores);
   } else {

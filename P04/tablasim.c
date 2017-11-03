@@ -19,6 +19,7 @@ struct _sym {
   Env* env;     // Alcance de la variable
 };
 
+// Símbolos pendientes
 struct _psym {
   char* id;     // Identificador de la variable
   Env* env;     // Alcance de la variable
@@ -77,4 +78,22 @@ context_check (Env* e, char* key, int r) {
       return s;
   }
   return NULL;
+}
+
+/* Obtiene el alcance (ambiente) del símbolo pendiente PS. */
+Env*
+get_env (PSym* ps) {
+  return ps->env;
+}
+
+/* Obtiene el id del símbolo pendiente PS. */
+char*
+get_id (PSym* ps) {
+  return ps->id;
+}
+
+/* Obtiene la línea del símbolo pendiente PS. */
+int
+get_line (PSym* ps) {
+  return ps->l;
 }
