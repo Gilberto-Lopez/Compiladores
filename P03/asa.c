@@ -530,11 +530,11 @@ print_formal (char** buffer, Formal* f) {
  * guarda en BUFFER. Regresa la longitud de la cadena guardada en BUFFER. */
 static size_t
 print_list (char** buffer, List* l) {
-  if (l->elementos == 0) {
+  if (l == NULL || l->elementos == 0) {
     *buffer = (char*) malloc(2*sizeof(char));
     (*buffer)[0] = '-';
     (*buffer)[1] = '\0';
-    return 2;
+    return 1;
   }
   size_t len = 0;
   char* ts;
