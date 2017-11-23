@@ -10,6 +10,7 @@ Laboratorio de compiladores
   2. Flex.
   3. Yacc.
   4. Tabla de símbolos.
+  5. Árbol de sintaxis abstracta. (Práctica 3)
 
 * Tareas/
   + automata.c : Autómata que reconoce ID, enteros y flotantes.
